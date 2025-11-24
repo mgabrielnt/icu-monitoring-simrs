@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'RS Prima Insan Mulia - Monitoring ICU/IGD',
+  title: 'RS Prima Insan Mulia - Monitoring ICU/IGD ',
   description: 'Sistem Monitoring 24 Jam untuk Pasien ICU dan IGD',
 };
 
