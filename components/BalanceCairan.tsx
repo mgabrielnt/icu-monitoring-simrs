@@ -1,321 +1,88 @@
-'use client';
+// File: /components/BalanceCairan.tsx (lengkap sesuai catatan)
+"use client";
+import React, { useMemo, useState } from 'react';
 
-import React, { useState } from 'react';
-import { Droplet, Plus } from 'lucide-react';
+export type LineInput = { nama: string; jumlah: string; total?: string };
 
-interface BalanceData {
-  jam: string;
-  cairanMasuk: number;
-  cairanKeluar: number;
-  iwl: number;
-  balance: number;
-  paraf: string;
-}
-
-interface Props {
-  currentTime: Date;
-}
-
-export default function BalanceCairan({ currentTime }: Props) {
-  const [dataList, setDataList] = useState<BalanceData[]>([
-    {
-      jam: "08:00",
-      cairanMasuk: 500,
-      cairanKeluar: 450,
-      iwl: 50,
-      balance: 0,
-      paraf: "RS"
-    }
+export default function BalanceCairan() {
+  const [lines, setLines] = useState<LineInput[]>([
+    { nama: 'Normal Saline', jumlah: '500 cc', total: '500 cc' },
+    { nama: '', jumlah: '', total: '' },
+    { nama: '', jumlah: '', total: '' },
   ]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    cairanMasuk: 0,
-    cairanKeluar: 0,
-    iwl: 0,
-    paraf: ''
-  });
+  const [enteral, setEnteral] = useState<LineInput[]>([
+    { nama: '', jumlah: '', total: '' },
+    { nama: '', jumlah: '', total: '' },
+    { nama: '', jumlah: '', total: '' },
+  ]);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit'
-    });
+  const [outputs, setOutputs] = useState({ ngt: '', urine: '450 cc', bab: '', drain: '' });
+
+  const parseCc = (s: string) => {
+    if (!s) return 0;
+    const m = s.toString().match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
   };
 
-  const calculateTotals = () => {
-    const totalMasuk = dataList.reduce((sum, item) => sum + item.cairanMasuk, 0);
-    const totalKeluar = dataList.reduce((sum, item) => sum + item.cairanKeluar, 0);
-    const totalIWL = dataList.reduce((sum, item) => sum + item.iwl, 0);
-    const balance = totalMasuk - (totalKeluar + totalIWL);
-    return { totalMasuk, totalKeluar, totalIWL, balance };
-  };
+  const totalMasuk = useMemo(() => lines.reduce((acc, l) => acc + parseCc(l.jumlah), 0) + enteral.reduce((acc, l) => acc + parseCc(l.jumlah), 0), [lines, enteral]);
+  const totalKeluar = useMemo(() => parseCc(outputs.ngt) + parseCc(outputs.urine) + parseCc(outputs.bab) + parseCc(outputs.drain), [outputs]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const balance = formData.cairanMasuk - (formData.cairanKeluar + formData.iwl);
-    const newData: BalanceData = {
-      jam: formatTime(currentTime),
-      ...formData,
-      balance
-    };
-    setDataList([...dataList, newData]);
-    setFormData({ cairanMasuk: 0, cairanKeluar: 0, iwl: 0, paraf: '' });
-    setShowForm(false);
-    alert('Data balance cairan berhasil ditambahkan!');
-  };
-
-  const totals = calculateTotals();
+  const iwl = 0; // placeholder, could be computed or input elsewhere
+  const balance = totalMasuk - (totalKeluar + iwl);
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">Cairan Masuk</p>
-              <p className="text-3xl font-bold mt-2">{totals.totalMasuk}</p>
-              <p className="text-green-100 text-xs mt-1">cc (24 Jam)</p>
+    <div className="bg-white rounded-lg shadow p-4 space-y-4">
+      <h3 className="text-lg font-semibold">Balance Cairan (lengkap)</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="font-medium mb-2">Line / Infus (3)</h4>
+          {lines.map((l, i) => (
+            <div key={i} className="flex gap-2 items-center mb-2">
+              <input value={l.nama} onChange={(e) => setLines((s) => s.map((x, idx) => idx === i ? { ...x, nama: e.target.value } : x))} placeholder="Nama Cairan" className="flex-1 p-2 border rounded" />
+              <input value={l.jumlah} onChange={(e) => setLines((s) => s.map((x, idx) => idx === i ? { ...x, jumlah: e.target.value } : x))} placeholder="100 cc" className="w-32 p-2 border rounded" />
+              <input value={l.total} onChange={(e) => setLines((s) => s.map((x, idx) => idx === i ? { ...x, total: e.target.value } : x))} placeholder="Total (opsional)" className="w-32 p-2 border rounded" />
             </div>
-            <Droplet className="w-12 h-12 text-green-200" />
+          ))}
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-2">Enteral (3)</h4>
+          {enteral.map((l, i) => (
+            <div key={i} className="flex gap-2 items-center mb-2">
+              <input value={l.nama} onChange={(e) => setEnteral((s) => s.map((x, idx) => idx === i ? { ...x, nama: e.target.value } : x))} placeholder="Nama Cairan" className="flex-1 p-2 border rounded" />
+              <input value={l.jumlah} onChange={(e) => setEnteral((s) => s.map((x, idx) => idx === i ? { ...x, jumlah: e.target.value } : x))} placeholder="100 cc" className="w-32 p-2 border rounded" />
+              <input value={l.total} onChange={(e) => setEnteral((s) => s.map((x, idx) => idx === i ? { ...x, total: e.target.value } : x))} placeholder="Total (opsional)" className="w-32 p-2 border rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="font-medium">Output / Keluar</h4>
+          <div className="flex gap-2 mb-2">
+            <input value={outputs.ngt} onChange={(e) => setOutputs((s) => ({ ...s, ngt: e.target.value }))} placeholder="NGT (cc)" className="flex-1 p-2 border rounded" />
+            <input value={outputs.urine} onChange={(e) => setOutputs((s) => ({ ...s, urine: e.target.value }))} placeholder="Urine (cc)" className="w-40 p-2 border rounded" />
+          </div>
+          <div className="flex gap-2">
+            <input value={outputs.bab} onChange={(e) => setOutputs((s) => ({ ...s, bab: e.target.value }))} placeholder="BAB (cc)" className="flex-1 p-2 border rounded" />
+            <input value={outputs.drain} onChange={(e) => setOutputs((s) => ({ ...s, drain: e.target.value }))} placeholder="Drain (cc)" className="w-40 p-2 border rounded" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-red-100 text-sm font-medium">Cairan Keluar</p>
-              <p className="text-3xl font-bold mt-2">{totals.totalKeluar}</p>
-              <p className="text-red-100 text-xs mt-1">cc (24 Jam)</p>
-            </div>
-            <Droplet className="w-12 h-12 text-red-200" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-orange-100 text-sm font-medium">IWL</p>
-              <p className="text-3xl font-bold mt-2">{totals.totalIWL}</p>
-              <p className="text-orange-100 text-xs mt-1">cc (24 Jam)</p>
-            </div>
-            <Droplet className="w-12 h-12 text-orange-200" />
-          </div>
-        </div>
-
-        <div className={`bg-gradient-to-br ${
-          totals.balance >= 0 
-            ? 'from-blue-500 to-blue-600' 
-            : 'from-purple-500 to-purple-600'
-        } rounded-lg shadow-lg p-6 text-white`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm font-medium">Balance 24 Jam</p>
-              <p className="text-3xl font-bold mt-2">
-                {totals.balance >= 0 ? '+' : ''}{totals.balance}
-              </p>
-              <p className="text-blue-100 text-xs mt-1">cc</p>
-            </div>
-            <Droplet className="w-12 h-12 text-blue-200" />
+        <div>
+          <h4 className="font-medium">Rekap</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between"><span>Total Masuk</span><strong>{totalMasuk} cc</strong></div>
+            <div className="flex justify-between"><span>Total Keluar</span><strong>{totalKeluar} cc</strong></div>
+            <div className="flex justify-between"><span>IWL (placeholder)</span><strong>{iwl} cc</strong></div>
+            <div className="flex justify-between"><span>Balance</span><strong>{balance} cc</strong></div>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center">
-            <Droplet className="w-6 h-6 mr-2 text-blue-600" />
-            Detail Balance Cairan Per Jam
-          </h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Input Data</span>
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Jam</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Cairan Masuk (cc)</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Cairan Keluar (cc)</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">IWL (cc)</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Balance (cc)</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Paraf</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {dataList.map((data, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 font-mono font-bold text-gray-800">{data.jam}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">
-                      {data.cairanMasuk}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold">
-                      {data.cairanKeluar}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full font-semibold">
-                      {data.iwl}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-full font-semibold ${
-                      data.balance >= 0
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}>
-                      {data.balance >= 0 ? '+' : ''}{data.balance}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full font-semibold">
-                      {data.paraf}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {/* Total Row */}
-              <tr className="bg-blue-50 font-bold">
-                <td className="px-6 py-4 text-gray-800">TOTAL 24 JAM</td>
-                <td className="px-6 py-4 text-center text-green-700">{totals.totalMasuk} cc</td>
-                <td className="px-6 py-4 text-center text-red-700">{totals.totalKeluar} cc</td>
-                <td className="px-6 py-4 text-center text-orange-700">{totals.totalIWL} cc</td>
-                <td className="px-6 py-4 text-center text-blue-700">
-                  {totals.balance >= 0 ? '+' : ''}{totals.balance} cc
-                </td>
-                <td className="px-6 py-4"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Form Input */}
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-lg p-6 animate-fadeIn">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Input Balance Cairan</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Jam (Real-time) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Jam (Real-time) *
-                </label>
-                <input
-                  type="text"
-                  value={formatTime(currentTime)}
-                  readOnly
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 font-mono font-bold"
-                />
-              </div>
-
-              {/* Paraf */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Paraf Perawat *
-                </label>
-                <input
-                  type="text"
-                  value={formData.paraf}
-                  onChange={(e) => setFormData({ ...formData, paraf: e.target.value })}
-                  placeholder="Masukkan inisial"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              {/* Cairan Masuk */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cairan Masuk (cc) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.cairanMasuk || ''}
-                  onChange={(e) => setFormData({ ...formData, cairanMasuk: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              {/* Cairan Keluar */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cairan Keluar (cc) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.cairanKeluar || ''}
-                  onChange={(e) => setFormData({ ...formData, cairanKeluar: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              {/* IWL */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  IWL (cc) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.iwl || ''}
-                  onChange={(e) => setFormData({ ...formData, iwl: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              {/* Balance (Auto Calculate) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Balance (Auto Calculate)
-                </label>
-                <input
-                  type="text"
-                  value={`${formData.cairanMasuk - (formData.cairanKeluar + formData.iwl)} cc`}
-                  readOnly
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 font-bold"
-                />
-              </div>
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
-              >
-                Simpan Data
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-semibold"
-              >
-                Batal
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }
