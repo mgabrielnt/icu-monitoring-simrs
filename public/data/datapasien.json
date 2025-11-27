@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "noRM": "RM-2024-001",
+    "nama": "Budi Santoso",
+    "tglLahir": "1965-03-15",
+    "unit": "ICU",
+    "tanggalMasuk": "2024-11-20",
+    "hariKe": 6,
+    "bb": "70",
+    "tb": "170",
+    "dokterDPJP": "Dr. Andi Wijaya, Sp.An",
+    "perawatPrimer": "Ns. Siti Aminah",
+    "perawatJaga": "Ns. Rudi Hartono - Pagi",
+    "diagnosis": [
+      "Sepsis",
+      "ARDS (Acute Respiratory Distress Syndrome)",
+      "Hipertensi Grade II",
+      "Acute Kidney Injury"
+    ]
+  },
+  {
+    "id": 2,
+    "noRM": "RM-2024-002",
+    "nama": "Siti Nurhaliza",
+    "tglLahir": "1978-08-22",
+    "unit": "IGD",
+    "tanggalMasuk": "2024-11-25",
+    "hariKe": 1,
+    "bb": "55",
+    "tb": "160",
+    "dokterDPJP": "Dr. Bambang Sutrisno, Sp.PD",
+    "perawatPrimer": "Ns. Dewi Lestari",
+    "perawatJaga": "Ns. Ahmad Fauzi - Sore",
+    "diagnosis": [
+      "Gastritis Akut",
+      "Dehidrasi Sedang",
+      "Anemia"
+    ]
+  },
+  {
+    "id": 3,
+    "noRM": "RM-2024-003",
+    "nama": "Ahmad Hidayat",
+    "tglLahir": "1990-12-05",
+    "unit": "ICU",
+    "tanggalMasuk": "2024-11-23",
+    "hariKe": 3,
+    "bb": "80",
+    "tb": "175",
+    "dokterDPJP": "Dr. Sri Mulyani, Sp.JP",
+    "perawatPrimer": "Ns. Fitri Handayani",
+    "perawatJaga": "Ns. Yoga Pratama - Malam",
+    "diagnosis": [
+      "Post Myocardial Infarction (STEMI)",
+      "Congestive Heart Failure (CHF)",
+      "Diabetes Melitus Type 2",
+      "Hiperkolesterolemia"
+    ]
+  },
+  {
+    "id": 4,
+    "noRM": "RM-2024-004",
+    "nama": "Dewi Sartika",
+    "tglLahir": "1985-07-10",
+    "unit": "ICU",
+    "tanggalMasuk": "2024-11-24",
+    "hariKe": 2,
+    "bb": "62",
+    "tb": "165",
+    "dokterDPJP": "Dr. Hendra Gunawan, Sp.B",
+    "perawatPrimer": "Ns. Rina Maharani",
+    "perawatJaga": "Ns. Budi Santoso - Pagi",
+    "diagnosis": [
+      "Post Laparotomy",
+      "Peritonitis",
+      "Septic Shock"
+    ]
+  }
+]
