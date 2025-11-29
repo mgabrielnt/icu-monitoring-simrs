@@ -1,285 +1,410 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { TrendingUp, Plus, User } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  FileText,
+  Clock,
+  User,
+  Edit3,
+  Trash2,
+  Plus,
+  BookOpenCheck,
+} from "lucide-react";
+import { postJson } from "@/lib/api";
 
-interface CatatanData {
-  id: number;
-  tglJam: string;
-  profesional: string;
-  hasilAssessment: string;
+export interface ProgressNoteDTO {
+  id?: string;
+  tglJam: string; // ISO "yyyy-MM-ddTHH:mm"
+  jenis: "O" | "A" | "P";
+  hasilAssesmen: string;
   instruksiPPA: string;
-  parafPerawat: string;
-  verifikasiDPJP?: string;
+  namaPerawat: string;
 }
 
-interface Props {
-  currentTime: Date;
+export interface CatatanTerintegrasiProps {
+  noRm?: string;
+  tanggal?: string;
+  hariPerawatanKe?: number;
+  initialNotes?: ProgressNoteDTO[];
+  onSaved?: () => void;
 }
 
-export default function CatatanTerintegrasi({ currentTime }: Props) {
-  const [dataList, setDataList] = useState<CatatanData[]>([
-    {
-      id: 1,
-      tglJam: "15/11/2024 - 08:00",
-      profesional: "Perawat",
-      hasilAssessment: "O: TD 120/80, HR 82x/menit, RR 18x/menit, Temp 36.8°C, SpO2 98%\nA: Pasien dalam kondisi stabil, kesadaran compos mentis, tidak ada keluhan\nP: Lanjutkan observasi TTV per 2 jam, monitor balance cairan",
-      instruksiPPA: "Observasi TTV setiap 2 jam, catat balance cairan, mobilisasi bertahap",
-      parafPerawat: "Ns. Rina Sari (RS)"
+interface ProgressNoteState extends ProgressNoteDTO {
+  _localId: string;
+}
+
+const createId = () => Math.random().toString(36).slice(2);
+
+const nowDateTimeLocal = () => {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60_000);
+  return local.toISOString().slice(0, 16);
+};
+
+const CatatanTerintegrasi: React.FC<CatatanTerintegrasiProps> = ({
+  noRm,
+  tanggal,
+  hariPerawatanKe,
+  initialNotes,
+  onSaved,
+}) => {
+  const [notes, setNotes] = useState<ProgressNoteState[]>(() => {
+    if (initialNotes && initialNotes.length > 0) {
+      return initialNotes.map((n) => ({
+        ...n,
+        tglJam: n.tglJam || nowDateTimeLocal(),
+        _localId: createId(),
+      }));
     }
-  ]);
-
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    profesional: 'Perawat',
-    hasilAssessment: '',
-    instruksiPPA: '',
-    parafPerawat: ''
+    return [
+      {
+        id: undefined,
+        tglJam: nowDateTimeLocal(),
+        jenis: "O",
+        hasilAssesmen: "",
+        instruksiPPA: "",
+        namaPerawat: "",
+        _localId: createId(),
+      },
+    ];
   });
 
-  const profesionalOptions = [
-    "Perawat",
-    "Dokter",
-    "Fisioterapi",
-    "Ahli Gizi",
-    "Apoteker"
-  ];
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleDateString('id-ID', { 
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) + ' - ' + date.toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit'
+  const updateNote = (
+    localId: string,
+    field: keyof ProgressNoteDTO,
+    value: string
+  ) => {
+    setNotes((prev) =>
+      prev.map((n) =>
+        n._localId === localId ? { ...n, [field]: value } : n
+      )
+    );
+  };
+
+  const addNote = () => {
+    setNotes((prev) => [
+      ...prev,
+      {
+        id: undefined,
+        tglJam: nowDateTimeLocal(),
+        jenis: "O",
+        hasilAssesmen: "",
+        instruksiPPA: "",
+        namaPerawat: "",
+        _localId: createId(),
+      },
+    ]);
+  };
+
+  const removeNote = (localId: string) => {
+    setNotes((prev) => {
+      const note = prev.find((n) => n._localId === localId);
+      if (note?.id) {
+        setDeletedIds((ids) => [...ids, note.id!]);
+      }
+      return prev.filter((n) => n._localId !== localId);
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newData: CatatanData = {
-      id: Date.now(),
-      tglJam: formatDateTime(currentTime),
-      ...formData
-    };
-    setDataList([...dataList, newData]);
-    setFormData({
-      profesional: 'Perawat',
-      hasilAssessment: '',
-      instruksiPPA: '',
-      parafPerawat: ''
-    });
-    setShowForm(false);
-    alert('Catatan perkembangan berhasil ditambahkan!');
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      const payload = {
+        meta: {
+          noRm: noRm || null,
+          tanggal: tanggal || null,
+          hariPerawatanKe: hariPerawatanKe ?? null,
+        },
+        notes: notes.map(({ _localId, ...rest }) => rest),
+        deletedNoteIds: deletedIds,
+      };
+
+      await postJson<typeof payload, { ok?: boolean; message?: string }>(
+        "/api/monitoring/catatan",
+        payload
+      );
+
+      setSubmitSuccess(true);
+      if (onSaved) onSaved();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Catatan Perkembangan Pasien Terintegrasi</h2>
-            <p className="text-purple-100">
-              Tuliskan perkembangan pasien dengan Format SOAP/ADIME (disertai sasaran, tulis nama, beri paraf)
+    <div className="space-y-5">
+      {/* HEADER GRADIENT – sama tema */}
+      <section className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 shadow-lg">
+        <div className="relative flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-16 h-32 w-32 rounded-full bg-teal-300/10 blur-3xl" />
+
+          <div className="relative space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-700/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-100/90 ring-1 ring-emerald-500/40">
+              <span className="h-[1px] w-6 bg-emerald-200/80" />
+              ICU • Page 6
+            </div>
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-emerald-50 sm:text-xl">
+              <BookOpenCheck className="h-5 w-5 text-emerald-200" />
+              Catatan Perkembangan Pasien Terintegrasi
+            </h2>
+            <p className="max-w-xl text-xs text-emerald-100/90">
+              Dokumentasi perkembangan pasien dengan format O/A/P, termasuk
+              instruksi PPA dan paraf perawat, dalam tampilan digital yang rapi.
             </p>
           </div>
-          <TrendingUp className="w-16 h-16 text-purple-200" />
-        </div>
-      </div>
 
-      {/* Info Box SOAP */}
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
-        <h3 className="font-bold text-blue-800 mb-2">Format SOAP/ADIME:</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-700">
-          <div>
-            <p><strong>S (Subjektif):</strong> Keluhan pasien</p>
-            <p><strong>O (Objektif):</strong> Data dari hasil pengukuran</p>
-          </div>
-          <div>
-            <p><strong>A (Assessment):</strong> Analisis kondisi pasien</p>
-            <p><strong>P (Planning):</strong> Rencana tindakan pada hari tersebut</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Add Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition shadow-lg"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Tambah Catatan</span>
-        </button>
-      </div>
-
-      {/* List Catatan */}
-      <div className="space-y-4">
-        {dataList.map((data) => (
-          <div key={data.id} className="bg-white rounded-lg shadow-lg border-l-4 border-purple-500 overflow-hidden">
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4 pb-3 border-b">
-                <div className="flex items-center space-x-3">
-                  <User className="w-5 h-5 text-purple-600" />
-                  <div>
-                    <p className="font-bold text-gray-800">{data.tglJam}</p>
-                    <p className="text-sm text-gray-600">{data.profesional}</p>
-                  </div>
-                </div>
-                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                  {data.parafPerawat}
+          <div className="relative flex flex-col items-end gap-1 text-[11px] text-emerald-100/90">
+            {noRm && (
+              <div className="flex items-center gap-1">
+                <User className="h-3 w-3 text-emerald-200" />
+                <span>
+                  No. RM:{" "}
+                  <span className="font-semibold text-emerald-50">
+                    {noRm}
+                  </span>
                 </span>
               </div>
+            )}
+            {tanggal && (
+              <span>
+                Tanggal:{" "}
+                <span className="font-semibold text-emerald-50">
+                  {tanggal}
+                </span>
+              </span>
+            )}
+            {typeof hariPerawatanKe !== "undefined" && (
+              <span>
+                Hari perawatan ke:{" "}
+                <span className="font-semibold text-emerald-50">
+                  {hariPerawatanKe}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+      </section>
 
-              {/* Content */}
-              <div className="space-y-4">
-                {/* Hasil Assessment */}
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2">
-                    Hasil Assessment Pasien dan Pemberian Layanan:
-                  </h4>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans">
-                      {data.hasilAssessment}
-                    </pre>
-                  </div>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-sm sm:p-5"
+      >
+        {/* HEADER LIST */}
+        <div className="flex flex-col gap-3 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
+              <FileText className="h-5 w-5 text-emerald-700" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                Daftar Catatan Perkembangan (O / A / P)
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Setiap catatan berisi tanggal/jam, hasil assesmen, instruksi PPA
+                dan paraf perawat.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] text-slate-500">
+              Total catatan:{" "}
+              <span className="font-semibold text-slate-800">
+                {notes.length}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={addNote}
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-1.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800"
+            >
+              <Plus className="h-4 w-4" />
+              Tambah catatan
+            </button>
+          </div>
+        </div>
+
+        {/* LIST NOTEs */}
+        <div className="space-y-3">
+          {notes.map((note, index) => (
+            <div
+              key={note._localId}
+              className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-[0_1px_2px_rgba(15,23,42,0.05)]"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+                  <label className="flex-1 text-xs">
+                    <span className="text-[11px] font-medium text-slate-700">
+                      Tanggal / Jam
+                    </span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-slate-500" />
+                      <input
+                        required
+                        type="datetime-local"
+                        value={note.tglJam}
+                        onChange={(e) =>
+                          updateNote(note._localId, "tglJam", e.target.value)
+                        }
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="w-full text-xs sm:w-40">
+                    <span className="text-[11px] font-medium text-slate-700">
+                      Keterangan (O / A / P)
+                    </span>
+                    <select
+                      required
+                      value={note.jenis}
+                      onChange={(e) =>
+                        updateNote(
+                          note._localId,
+                          "jenis",
+                          e.target.value as ProgressNoteDTO["jenis"]
+                        )
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="O">O – Objective</option>
+                      <option value="A">A – Assessment</option>
+                      <option value="P">P – Plan</option>
+                    </select>
+                  </label>
                 </div>
 
-                {/* Instruksi PPA */}
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2">
-                    Instruksi PPA (Termasuk Pasca Bedah):
-                  </h4>
-                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap">
-                      {data.instruksiPPA}
-                    </p>
-                  </div>
+                <div className="flex items-start justify-between gap-2 sm:w-60">
+                  <label className="flex-1 text-xs">
+                    <span className="text-[11px] font-medium text-slate-700">
+                      Paraf Perawat (Nama)
+                    </span>
+                    <input
+                      required
+                      value={note.namaPerawat}
+                      onChange={(e) =>
+                        updateNote(
+                          note._localId,
+                          "namaPerawat",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Nama perawat pemberi asuhan"
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeNote(note._localId)}
+                    className="mt-6 inline-flex items-center justify-center rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100 disabled:cursor-not-allowed disabled:text-slate-300"
+                    disabled={notes.length === 1}
+                  >
+                    <Trash2 className="mr-1 h-3.5 w-3.5" />
+                    Hapus
+                  </button>
                 </div>
+              </div>
 
-                {/* Verifikasi DPJP */}
-                {data.verifikasiDPJP && (
-                  <div className="pt-3 border-t">
-                    <p className="text-sm text-gray-600">
-                      <strong>Verifikasi DPJP:</strong> {data.verifikasiDPJP}
-                    </p>
-                  </div>
+              <label className="block text-xs">
+                <span className="flex items-center gap-1 text-[11px] font-medium text-slate-700">
+                  <Edit3 className="h-3.5 w-3.5 text-slate-500" />
+                  Hasil Assesmen Pasien &amp; Pemberian Layanan
+                </span>
+                <textarea
+                  required
+                  rows={3}
+                  value={note.hasilAssesmen}
+                  onChange={(e) =>
+                    updateNote(
+                      note._localId,
+                      "hasilAssesmen",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Tulis assesmen dengan format O/A/P. Contoh: O: ..., A: ..., P: ..."
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </label>
+
+              <label className="block text-xs">
+                <span className="text-[11px] font-medium text-slate-700">
+                  Instruksi PPA Termasuk Pasca Bedah
+                </span>
+                <textarea
+                  required
+                  rows={2}
+                  value={note.instruksiPPA}
+                  onChange={(e) =>
+                    updateNote(
+                      note._localId,
+                      "instruksiPPA",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Tuliskan instruksi PPA secara spesifik, termasuk instruksi pasca bedah bila ada."
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </label>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-500">
+                <span>Catatan #{index + 1}</span>
+                {note.id && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Tersimpan di server (ID: {note.id})
+                  </span>
                 )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Form Input */}
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-lg p-6 animate-fadeIn border-2 border-purple-200">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <Plus className="w-6 h-6 mr-2 text-purple-600" />
-            Tambah Catatan Perkembangan (SOAP/ADIME Format)
-          </h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Tanggal/Jam & Profesional */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tanggal/Jam (Real-time) *
-                </label>
-                <input
-                  type="text"
-                  value={formatDateTime(currentTime)}
-                  readOnly
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 font-mono font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profesional Pemberi Asuhan *
-                </label>
-                <select
-                  value={formData.profesional}
-                  onChange={(e) => setFormData({ ...formData, profesional: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  required
-                >
-                  {profesionalOptions.map((prof) => (
-                    <option key={prof} value={prof}>{prof}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Hasil Assessment & Pemberian Layanan */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hasil Assessment Pasien dan Pemberian Layanan (Format SOAP/ADIME) *
-              </label>
-              <textarea
-                value={formData.hasilAssessment}
-                onChange={(e) => setFormData({ ...formData, hasilAssessment: e.target.value })}
-                rows={8}
-                placeholder="Tuliskan dengan format SOAP/ADIME:&#10;&#10;S (Subjektif): Keluhan pasien...&#10;O (Objektif): TD 120/80, HR 82x/menit, RR 18x/menit...&#10;A (Assessment): Pasien dalam kondisi stabil...&#10;P (Planning): Lanjutkan observasi TTV..."
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none font-mono text-sm"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                * Disertai sasaran, tulis nama lengkap, dan beri paraf pada akhir catatan
-              </p>
-            </div>
-
-            {/* Instruksi PPA */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Instruksi PPA Termasuk Pasca Bedah *
-              </label>
-              <textarea
-                value={formData.instruksiPPA}
-                onChange={(e) => setFormData({ ...formData, instruksiPPA: e.target.value })}
-                rows={4}
-                placeholder="Instruksi ditulis dengan rinci dan jelas...&#10;Contoh: Observasi TTV setiap 2 jam, monitor balance cairan, mobilisasi bertahap..."
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                required
-              />
-            </div>
-
-            {/* Paraf Perawat */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Paraf Perawat (Nama Lengkap & Inisial) *
-              </label>
-              <input
-                type="text"
-                value={formData.parafPerawat}
-                onChange={(e) => setFormData({ ...formData, parafPerawat: e.target.value })}
-                placeholder="Contoh: Ns. Rina Sari (RS)"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div className="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold"
-              >
-                Simpan Catatan
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-semibold"
-              >
-                Batal
-              </button>
-            </div>
-          </form>
+          ))}
         </div>
-      )}
+
+        {/* FOOTER / SUBMIT */}
+        <footer className="mt-2 flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-center gap-2 text-[11px] text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500 ring-1 ring-slate-200">
+              <FileText className="h-3 w-3" />
+            </span>
+            Gunakan O/A/P untuk menjaga konsistensi catatan perkembangan. Data
+            dikirim ke{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 text-[10px]">
+              /api/monitoring/catatan
+            </code>
+            .
+          </p>
+          <div className="flex items-center gap-2">
+            {submitError && (
+              <span className="text-[11px] text-rose-600">{submitError}</span>
+            )}
+            {submitSuccess && (
+              <span className="text-[11px] text-emerald-700">
+                Catatan tersimpan. ✅
+              </span>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-full bg-emerald-700 px-5 py-1.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-70"
+            >
+              {isSubmitting ? "Menyimpan..." : "Simpan Page 6"}
+            </button>
+          </div>
+        </footer>
+      </form>
     </div>
   );
-}
+};
+
+export default CatatanTerintegrasi;
