@@ -1,5 +1,7 @@
+// types/patient.ts
+
 export interface Patient {
-    id: number;
+  id: number;
   noRM: string;
   nama: string;
   tglLahir: string;
@@ -12,5 +14,23 @@ export interface Patient {
   dokterDPJP: string;
   perawatPrimer: string;
   perawatJaga?: string;
+  diagnosis: string[];
+}
+
+export type SearchByType = 'noRM' | 'nama' | 'tglLahir';
+
+export interface AddPatientFormData {
+  noRM: string;
+  nama: string;
+  tglLahir: string;
+  unit: string;
+  tanggalMasuk: string;
+  hariKe: number;
+  bb: string;
+  tb: string;
+  penanggungJawab: string;
+  dokterDPJP: string;
+  perawatPrimer: string;
+  perawatJaga: string;
   diagnosis: string[];
 }

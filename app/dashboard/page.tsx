@@ -1,150 +1,56 @@
+// app/dashboard/page.tsx
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';  // ✅ TAMBAHKAN INI
-import Header from '../../components/Header';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
 import SearchSection from './components/SearchSection';
 import PatientTable from './components/PatientTable';
-import AddPatientModal from './tambahpasien/AddPatientModal';
-import { Patient } from '@/types/patient';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-const PATIENTS_API_URL = `${API_BASE_URL}/data/datapasien.json`;
+import AddPatientModal from './addpatient/AddPatientModal';
+import { SearchByType } from '@/types/patient';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import { useAddPatientForm } from '@/hooks/useAddPatientForm';
+import { createDashboardHandlers } from '@/handlers/dashboardHandlers';
+import { filterPatientsBySearch } from '@/utils/dashboardUtils';
 
 export default function DashboardPage() {
-  const router = useRouter();  // ✅ TAMBAHKAN INI
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchBy, setSearchBy] = useState<'noRM' | 'nama' | 'tglLahir'>('noRM');
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchBy, setSearchBy] = useState<SearchByType>('noRM');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    noRM: '',
-    nama: '',
-    tglLahir: '',
-    unit: 'ICU',
-    tanggalMasuk: '',
-    hariKe: 1,
-    bb: '',
-    tb: '',
-    dokterDPJP: '',
-    perawatPrimer: '',
-    perawatJaga: '',
-    diagnosis: ['', '', '', '']
+
+  // Custom hooks untuk data management
+  const { patients, loading, addPatientToList, getNextPatientId } = useDashboardData();
+  
+  // Custom hook untuk form management
+  const { 
+    formData, 
+    handleFormInputChange, 
+    handleFormDiagnosisChange, 
+    resetAddPatientForm 
+  } = useAddPatientForm();
+
+  // Event handlers
+  const { handleAddPatientSubmit, handleDashboardLogout } = createDashboardHandlers({
+    formData,
+    addPatientToList,
+    getNextPatientId,
+    closeModal: () => setShowModal(false),
+    resetForm: resetAddPatientForm
   });
 
-  useEffect(() => {
-    fetchPatients();
-  }, []);
+  // Filter patients berdasarkan search
+  const filteredPatients = filterPatientsBySearch(patients, searchTerm, searchBy);
 
-  const fetchPatients = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(PATIENTS_API_URL);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch patients data');
-      }
-      
-      const data = await response.json();
-      setPatients(data);
-    } catch (error) {
-      console.error('Error fetching patients:', error);
-      alert('Gagal memuat data pasien');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredPatients = patients.filter(patient => {
-    const term = searchTerm.toLowerCase();
-    if (searchBy === 'noRM') return patient.noRM.toLowerCase().includes(term);
-    if (searchBy === 'nama') return patient.nama.toLowerCase().includes(term);
-    if (searchBy === 'tglLahir') return patient.tglLahir.includes(term);
-    return true;
-  });
-
-  // ✅ FIX: Parameter number untuk ID
+  // Navigation ke detail patient
   const handleViewDetail = (patientId: number) => {
     router.push(`/patients/${patientId}`);
   };
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    alert('Logout berhasil');
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleDiagnosisChange = (index: number, value: string) => {
-    const newDiagnosis = [...formData.diagnosis];
-    newDiagnosis[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      diagnosis: newDiagnosis
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.noRM || !formData.nama || !formData.tglLahir || !formData.tanggalMasuk || 
-        !formData.bb || !formData.tb || !formData.dokterDPJP || !formData.perawatPrimer || 
-        !formData.perawatJaga || !formData.diagnosis[0]) {
-      alert('Mohon lengkapi semua field yang wajib diisi (*)');
-      return;
-    }
-    
-    const newPatient: Patient = {
-      id: patients.length + 1,  // ✅ FIX: Number (tanpa quotes)
-      noRM: formData.noRM,
-      nama: formData.nama,
-      tglLahir: formData.tglLahir,
-      unit: formData.unit,
-      tglMasuk: formData.tanggalMasuk,
-      hariKe: Number(formData.hariKe),
-      bb: Number(formData.bb),
-      tb: Number(formData.tb),
-      penanggungJawab: '',
-      dokterDPJP: formData.dokterDPJP,
-      perawatPrimer: formData.perawatPrimer,
-      perawatJaga: formData.perawatJaga,
-      diagnosis: formData.diagnosis.filter(d => d !== '')
-    };
-
-    try {
-      setPatients(prev => [...prev, newPatient]);
-      setShowModal(false);
-      
-      setFormData({
-        noRM: '',
-        nama: '',
-        tglLahir: '',
-        unit: 'ICU',
-        tanggalMasuk: '',
-        hariKe: 1,
-        bb: '',
-        tb: '',
-        dokterDPJP: '',
-        perawatPrimer: '',
-        perawatJaga: '',
-        diagnosis: ['', '', '', '']
-      });
-      
-      alert('Data pasien berhasil ditambahkan!');
-    } catch (error) {
-      console.error('Error adding patient:', error);
-      alert('Gagal menambahkan data pasien');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <Header onLogout={handleLogout} />
+      <Header onLogout={handleDashboardLogout} />
 
       <div className="container mx-auto px-6 py-8">
         <SearchSection
@@ -166,9 +72,9 @@ export default function DashboardPage() {
         isOpen={showModal}
         formData={formData}
         onClose={() => setShowModal(false)}
-        onInputChange={handleInputChange}
-        onDiagnosisChange={handleDiagnosisChange}
-        onSubmit={handleSubmit}
+        onInputChange={handleFormInputChange}
+        onDiagnosisChange={handleFormDiagnosisChange}
+        onSubmit={handleAddPatientSubmit}
       />
     </div>
   );

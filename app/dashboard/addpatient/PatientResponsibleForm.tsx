@@ -1,16 +1,14 @@
+// app/dashboard/addpatient/PatientResponsibleForm.tsx
 import React from "react";
-import { FormData } from "./AddPatientModal";
-import { Section, InputField } from "./PatientIdentityForm";
+import { Section, InputField } from "@/components/FormComponents";
+import { AddPatientFormData } from "@/types/patient";
 
 interface Props {
-  formData: FormData;
+  formData: AddPatientFormData;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export default function PatientResponsibleForm({
-  formData,
-  onInputChange,
-}: Props) {
+export default function PatientResponsibleForm({ formData, onInputChange }: Props) {
   return (
     <Section title="PENANGGUNG JAWAB PASIEN" color="green">
       <div className="grid grid-cols-1 gap-3">
@@ -39,6 +37,15 @@ export default function PatientResponsibleForm({
           onChange={onInputChange}
           required
           placeholder="Ns. Nama Perawat (Pagi/Sore/Malam)"
+        />
+
+        <InputField
+          label="Penanggung Jawab Keluarga"
+          name="penanggungJawab"
+          value={formData.penanggungJawab}
+          onChange={onInputChange}
+          required
+          placeholder="Nama keluarga / wali pasien"
         />
       </div>
     </Section>

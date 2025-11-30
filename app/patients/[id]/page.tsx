@@ -1,85 +1,29 @@
+// app/patients/[id]/page.tsx
+
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Container from '@/components/Container';
-import { Patient } from '@/types/patient';
 import { Calendar, User, Activity, Stethoscope, Clock } from 'lucide-react';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-const PATIENTS_API_URL = `${API_BASE_URL}/data/datapasien.json`;
+import { usePatientDetail } from '@/hooks/usePatientDetail';
+import { createPatientDetailHandlers } from '@/handlers/patientHandlers';
+import { formatDateIndonesia } from '@/utils/dashboardUtils';
+import PatientHeader from './components/PatientHeader';
+import PatientInfoCard from './components/PatientInfoCard';
+import PatientDiagnosisCard from './components/PatientDiagnosisCard';
 
 export default function PatientDetailPage() {
   const params = useParams();
-  const patientId = Number(params.id);  // ✅ Convert string ke number
+  const router = useRouter();
+  const patientId = Number(params.id);
   
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Custom hook untuk data patient
+  const { patient, loading, error } = usePatientDetail(patientId);
+  
+  // Handlers
+  const { goBack } = createPatientDetailHandlers(router);
 
-  useEffect(() => {
-    fetchPatientDetail();
-  }, [patientId]);
-
-  const fetchPatientDetail = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      console.log('🔍 DEBUG - Patient ID from URL:', patientId);
-      console.log('🔍 DEBUG - API URL:', PATIENTS_API_URL);
-      console.log('🔍 DEBUG - Fetching data...');
-
-      const response = await fetch(PATIENTS_API_URL);
-      console.log('🔍 DEBUG - Response status:', response.status);
-      console.log('🔍 DEBUG - Response OK:', response.ok);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch patient data - Status: ${response.status}`);
-      }
-      
-      const data: Patient[] = await response.json();
-      console.log('🔍 DEBUG - Total patients in JSON:', data.length);
-      console.log('🔍 DEBUG - All patient IDs:', data.map(p => p.id));
-      console.log('🔍 DEBUG - Looking for patient ID:', patientId);
-      console.log('🔍 DEBUG - Patient ID type:', typeof patientId);
-      
-      // Cari pasien berdasarkan ID (support both string and number)
-      const foundPatient = data.find(p => {
-        console.log(`🔍 DEBUG - Comparing: "${p.id}" (${typeof p.id}) === "${patientId}" (${typeof patientId})`);
-        // Compare as strings to handle both cases
-        return String(p.id) === String(patientId);
-      });
-      
-      console.log('🔍 DEBUG - Found patient:', foundPatient);
-      
-      if (!foundPatient) {
-        console.error('❌ DEBUG - Patient not found!');
-        throw new Error('Pasien tidak ditemukan');
-      }
-      
-      console.log('✅ DEBUG - Patient loaded successfully:', foundPatient.nama);
-      setPatient(foundPatient);
-    } catch (err) {
-      console.error('❌ DEBUG - Error fetching patient:', err);
-      setError(err instanceof Error ? err.message : 'Gagal memuat data pasien');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
+  // Loading state
   if (loading) {
     return (
       <Container className="py-8">
@@ -91,6 +35,7 @@ export default function PatientDetailPage() {
     );
   }
 
+  // Error state
   if (error || !patient) {
     return (
       <Container className="py-8">
@@ -99,7 +44,7 @@ export default function PatientDetailPage() {
           <h2 className="text-2xl font-bold text-red-800 mb-2">Error</h2>
           <p className="text-red-600 mb-4">{error || 'Pasien tidak ditemukan'}</p>
           <button
-            onClick={() => window.history.back()}
+            onClick={goBack}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
             Kembali
@@ -109,157 +54,113 @@ export default function PatientDetailPage() {
     );
   }
 
+  // Success state - Display patient data
   return (
     <Container className="py-8">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Header Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-              <User className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">{patient.nama}</h1>
-              <p className="text-blue-100 text-sm mt-1">No. RM: {patient.noRM}</p>
-            </div>
-          </div>
-        </div>
+        
+        {/* Header */}
+        <PatientHeader patient={patient} />
 
         {/* Patient Info Grid */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* No. RM */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Activity className="w-4 h-4 text-blue-600" />
-                <p className="text-sm font-medium text-gray-600">No. Rekam Medis</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.noRM}</p>
-            </div>
+            <PatientInfoCard
+              icon={Activity}
+              iconColor="text-blue-600"
+              label="No. Rekam Medis"
+              value={patient.noRM}
+            />
 
-            {/* Nama */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <User className="w-4 h-4 text-blue-600" />
-                <p className="text-sm font-medium text-gray-600">Nama Lengkap</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.nama}</p>
-            </div>
+            <PatientInfoCard
+              icon={User}
+              iconColor="text-blue-600"
+              label="Nama Lengkap"
+              value={patient.nama}
+            />
 
-            {/* Tanggal Lahir */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="w-4 h-4 text-blue-600" />
-                <p className="text-sm font-medium text-gray-600">Tanggal Lahir</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{formatDate(patient.tglLahir)}</p>
-            </div>
+            <PatientInfoCard
+              icon={Calendar}
+              iconColor="text-blue-600"
+              label="Tanggal Lahir"
+              value={formatDateIndonesia(patient.tglLahir)}
+            />
 
-            {/* Unit */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Activity className="w-4 h-4 text-green-600" />
-                <p className="text-sm font-medium text-gray-600">Unit Perawatan</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.unit}</p>
-            </div>
+            <PatientInfoCard
+              icon={Activity}
+              iconColor="text-green-600"
+              label="Unit Perawatan"
+              value={patient.unit}
+            />
 
-            {/* Tanggal Masuk */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Clock className="w-4 h-4 text-green-600" />
-                <p className="text-sm font-medium text-gray-600">Tanggal Masuk</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{formatDate(patient.tglMasuk)}</p>
-            </div>
+            <PatientInfoCard
+              icon={Clock}
+              iconColor="text-green-600"
+              label="Tanggal Masuk"
+              value={formatDateIndonesia(patient.tglMasuk)}
+            />
 
-            {/* Hari Rawat */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="w-4 h-4 text-green-600" />
-                <p className="text-sm font-medium text-gray-600">Hari Rawat</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">Hari ke-{patient.hariKe}</p>
-            </div>
+            <PatientInfoCard
+              icon={Calendar}
+              iconColor="text-green-600"
+              label="Hari Rawat"
+              value={`Hari ke-${patient.hariKe}`}
+            />
 
-            {/* Berat Badan */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Activity className="w-4 h-4 text-purple-600" />
-                <p className="text-sm font-medium text-gray-600">Berat Badan</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.bb} kg</p>
-            </div>
+            <PatientInfoCard
+              icon={Activity}
+              iconColor="text-purple-600"
+              label="Berat Badan"
+              value={`${patient.bb} kg`}
+            />
 
-            {/* Tinggi Badan */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Activity className="w-4 h-4 text-purple-600" />
-                <p className="text-sm font-medium text-gray-600">Tinggi Badan</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.tb} cm</p>
-            </div>
+            <PatientInfoCard
+              icon={Activity}
+              iconColor="text-purple-600"
+              label="Tinggi Badan"
+              value={`${patient.tb} cm`}
+            />
 
-            {/* Dokter DPJP */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <Stethoscope className="w-4 h-4 text-red-600" />
-                <p className="text-sm font-medium text-gray-600">Dokter DPJP</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.dokterDPJP}</p>
-            </div>
+            <PatientInfoCard
+              icon={Stethoscope}
+              iconColor="text-red-600"
+              label="Dokter DPJP"
+              value={patient.dokterDPJP}
+            />
 
-            {/* Perawat Primer */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <User className="w-4 h-4 text-red-600" />
-                <p className="text-sm font-medium text-gray-600">Perawat Primer</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.perawatPrimer}</p>
-            </div>
+            <PatientInfoCard
+              icon={User}
+              iconColor="text-red-600"
+              label="Perawat Primer"
+              value={patient.perawatPrimer}
+            />
 
-            {/* Perawat Jaga */}
             {patient.perawatJaga && (
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center space-x-2 mb-2">
-                  <User className="w-4 h-4 text-red-600" />
-                  <p className="text-sm font-medium text-gray-600">Perawat Jaga</p>
-                </div>
-                <p className="font-bold text-xl text-gray-800">{patient.perawatJaga}</p>
-              </div>
+              <PatientInfoCard
+                icon={User}
+                iconColor="text-red-600"
+                label="Perawat Jaga"
+                value={patient.perawatJaga}
+              />
             )}
 
-            {/* Penanggung Jawab */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <User className="w-4 h-4 text-orange-600" />
-                <p className="text-sm font-medium text-gray-600">Penanggung Jawab</p>
-              </div>
-              <p className="font-bold text-xl text-gray-800">{patient.penanggungJawab || '-'}</p>
-            </div>
+            <PatientInfoCard
+              icon={User}
+              iconColor="text-orange-600"
+              label="Penanggung Jawab"
+              value={patient.penanggungJawab || '-'}
+            />
           </div>
 
           {/* Diagnosis */}
-          <div className="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-            <h3 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
-              <Activity className="w-5 h-5 mr-2 text-yellow-600" />
-              Diagnosis
-            </h3>
-            <ul className="space-y-2">
-              {patient.diagnosis.map((diag, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="font-bold text-yellow-700 mr-2">{index + 1}.</span>
-                  <span className="text-gray-800">{diag}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <PatientDiagnosisCard diagnosis={patient.diagnosis} />
 
           {/* Info Footer */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-blue-800 text-sm">
-              💡 <strong>Info:</strong> Gunakan menu di atas untuk navigasi ke halaman lain (Penggantian Alat, Jadwal Obat, Catatan, Vital Sign)
+              💡 <strong>Info:</strong> Gunakan menu di atas untuk navigasi ke halaman lain 
+              (Alat Invasif, Hemodinamik, Instruksi Obat, dll)
             </p>
           </div>
         </div>

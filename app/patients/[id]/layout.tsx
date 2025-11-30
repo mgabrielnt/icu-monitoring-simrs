@@ -42,7 +42,7 @@ export default function PatientLayout({
     // Routing berdasarkan menu
     const routes: Record<string, string> = {
       'datadiri': `/patients/${patientId}`,
-      'alatinvasif': `/patients/${patientId}/alatinvasif`,
+      'alatinvasif': `/patients/${patientId}/alatinvansive`,
       'hemodinamik': `/patients/${patientId}/hemodinamik`,
       'instruksiobat': `/patients/${patientId}/instruksiobat`,
       'perencanaanperawat': `/patients/${patientId}/perencanaanperawat`,
