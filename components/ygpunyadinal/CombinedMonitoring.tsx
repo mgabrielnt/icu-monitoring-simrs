@@ -1,7 +1,7 @@
 // File: /pages/combined-monitoring.tsx
 "use client";
 import React, { useState } from 'react';
-import BalanceCairan from '../components/BalanceCairan';
+import BalanceCairan from './BalanceCairan';
 
 export default function CombinedMonitoring() {
   // Respirasi
