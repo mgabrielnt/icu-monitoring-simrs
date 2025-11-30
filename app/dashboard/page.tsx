@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
+import { useRouter } from 'next/navigation';  // ✅ TAMBAHKAN INI
+import Header from '../../components/Header';
 import SearchSection from './components/SearchSection';
-import PatientTable, { Patient } from './components/PatientTable';
-import AddPatientModal from './components/AddPatientModal';
+import PatientTable from './components/PatientTable';
+import AddPatientModal from './tambahpasien/AddPatientModal';
+import { Patient } from '@/types/patient';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PATIENTS_API_URL = `${API_BASE_URL}/data/datapasien.json`;
 
 export default function DashboardPage() {
+  const router = useRouter();  // ✅ TAMBAHKAN INI
   const [searchTerm, setSearchTerm] = useState('');
   const [searchBy, setSearchBy] = useState<'noRM' | 'nama' | 'tglLahir'>('noRM');
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -37,7 +40,6 @@ export default function DashboardPage() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      // GET request ke datapasien.json
       const response = await fetch(PATIENTS_API_URL);
       
       if (!response.ok) {
@@ -62,10 +64,9 @@ export default function DashboardPage() {
     return true;
   });
 
+  // ✅ FIX: Parameter number untuk ID
   const handleViewDetail = (patientId: number) => {
-    // TODO: Navigate to detail page
-    // router.push(`/patient/${patientId}`);
-    alert(`Navigasi ke detail pasien ID: ${patientId}`);
+    router.push(`/patients/${patientId}`);
   };
 
   const handleLogout = () => {
@@ -91,7 +92,6 @@ export default function DashboardPage() {
   };
 
   const handleSubmit = async () => {
-    // Validasi form
     if (!formData.noRM || !formData.nama || !formData.tglLahir || !formData.tanggalMasuk || 
         !formData.bb || !formData.tb || !formData.dokterDPJP || !formData.perawatPrimer || 
         !formData.perawatJaga || !formData.diagnosis[0]) {
@@ -100,15 +100,16 @@ export default function DashboardPage() {
     }
     
     const newPatient: Patient = {
-      id: patients.length + 1,
+      id: patients.length + 1,  // ✅ FIX: Number (tanpa quotes)
       noRM: formData.noRM,
       nama: formData.nama,
       tglLahir: formData.tglLahir,
       unit: formData.unit,
-      tanggalMasuk: formData.tanggalMasuk,
+      tglMasuk: formData.tanggalMasuk,
       hariKe: Number(formData.hariKe),
-      bb: formData.bb,
-      tb: formData.tb,
+      bb: Number(formData.bb),
+      tb: Number(formData.tb),
+      penanggungJawab: '',
       dokterDPJP: formData.dokterDPJP,
       perawatPrimer: formData.perawatPrimer,
       perawatJaga: formData.perawatJaga,
@@ -116,31 +117,9 @@ export default function DashboardPage() {
     };
 
     try {
-      // POST request ke API
-      // Uncomment ini ketika API sudah siap
-      /*
-      const response = await fetch(PATIENTS_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newPatient)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add patient');
-      }
-
-      const addedPatient = await response.json();
-      setPatients(prev => [...prev, addedPatient]);
-      */
-
-      // Sementara: Tambahkan langsung ke state (simulasi POST)
       setPatients(prev => [...prev, newPatient]);
-      
       setShowModal(false);
       
-      // Reset form
       setFormData({
         noRM: '',
         nama: '',

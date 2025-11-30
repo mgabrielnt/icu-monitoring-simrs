@@ -1,36 +1,21 @@
-import React, { useState, useMemo } from "react";
-import { Search, Calendar, Eye } from "lucide-react";
+// components/PatientTable.tsx
 
-export interface Patient {
-  id: number;
-  noRM: string;
-  nama: string;
-  tglLahir: string;
-  unit: string;
-  tanggalMasuk: string;
-  hariKe: number;
-  bb: string;
-  tb: string;
-  dokterDPJP: string;
-  perawatPrimer: string;
-  perawatJaga: string;
-  diagnosis: string[];
-}
+import React, { useState, useMemo } from "react";
+import { Calendar, Eye, Search } from "lucide-react";
+import { Patient } from "@/types/patient";
 
 interface PatientTableProps {
   patients: Patient[];
   loading: boolean;
-  onViewDetail: (patientId: number) => void;
+  onViewDetail: (patientId: number) => void;  // ✅ Ubah ke number
 }
 
 export default function PatientTable({ patients, loading, onViewDetail }: PatientTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 5;
 
-  // Hitung total halaman
   const totalPages = Math.ceil(patients.length / perPage);
 
-  // Data yang tampil di halaman saat ini
   const currentData = useMemo(() => {
     const start = (currentPage - 1) * perPage;
     return patients.slice(start, start + perPage);
@@ -76,7 +61,7 @@ export default function PatientTable({ patients, loading, onViewDetail }: Patien
                   <tr>
                     <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                       <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p className="font-medium">Tidak ada data pasien ditemukan</p>
+                      Tidak ada data pasien ditemukan
                     </td>
                   </tr>
                 ) : (
@@ -97,18 +82,12 @@ export default function PatientTable({ patients, loading, onViewDetail }: Patien
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>
-                            {new Date(patient.tglLahir).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </span>
+                          {new Date(patient.tglLahir).toLocaleDateString("id-ID")}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
-                          onClick={() => onViewDetail(patient.id)}
+                          onClick={() => onViewDetail(patient.id)}  
                           className="inline-flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg"
                         >
                           <Eye className="w-4 h-4" />
@@ -129,9 +108,9 @@ export default function PatientTable({ patients, loading, onViewDetail }: Patien
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-2 rounded-lg border text-sm font-medium ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white hover:bg-blue-50"
+                  currentPage === 1 
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
+                    : "bg-white hover:bg-blue-50 text-gray-700"
                 }`}
               >
                 Prev
@@ -141,10 +120,10 @@ export default function PatientTable({ patients, loading, onViewDetail }: Patien
                 <button
                   key={i}
                   onClick={() => goToPage(i + 1)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white shadow"
-                      : "bg-white hover:bg-blue-50 border"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    currentPage === i + 1 
+                      ? "bg-blue-600 text-white shadow-md" 
+                      : "bg-white hover:bg-blue-50 border text-gray-700"
                   }`}
                 >
                   {i + 1}
@@ -155,9 +134,9 @@ export default function PatientTable({ patients, loading, onViewDetail }: Patien
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-2 rounded-lg border text-sm font-medium ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white hover:bg-blue-50"
+                  currentPage === totalPages 
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
+                    : "bg-white hover:bg-blue-50 text-gray-700"
                 }`}
               >
                 Next
