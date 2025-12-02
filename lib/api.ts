@@ -1,11 +1,42 @@
-// D:\projek-medis\icu-monitoring-simrs\lib\api.ts
+// src/lib/api.ts
 
-export async function postJson<TBody, TResponse = unknown>(
-  url: string,
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+export async function getJson<TResp>(
+  path: string,
+  init?: RequestInit
+): Promise<TResp> {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "NEXT_PUBLIC_BACKEND_URL belum diset di .env.local"
+    );
+  }
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    ...(init || {}),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Request gagal (${res.status})`);
+  }
+
+  return (await res.json()) as TResp;
+}
+
+export async function postJson<TBody, TResp>(
+  path: string,
   body: TBody,
   init?: RequestInit
-): Promise<TResponse> {
-  const res = await fetch(url, {
+): Promise<TResp> {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "NEXT_PUBLIC_BACKEND_URL belum diset di .env.local"
+    );
+  }
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -16,20 +47,9 @@ export async function postJson<TBody, TResponse = unknown>(
   });
 
   if (!res.ok) {
-    let message = `Request failed with status ${res.status}`;
-    try {
-      const txt = await res.text();
-      if (txt) message += `: ${txt}`;
-    } catch {
-      // ignore
-    }
-    throw new Error(message);
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Request gagal (${res.status})`);
   }
 
-  // Kalau backend kamu balikin 204 No Content
-  if (res.status === 204) {
-    return undefined as unknown as TResponse;
-  }
-
-  return (await res.json()) as TResponse;
+  return (await res.json()) as TResp;
 }

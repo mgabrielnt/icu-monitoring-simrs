@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Container from '@/components/Container';
 import { Calendar, User, Activity, Stethoscope, Clock } from 'lucide-react';
 import { usePatientDetail } from '@/hooks/usePatientDetail';
@@ -14,35 +14,31 @@ import PatientDiagnosisCard from './components/PatientDiagnosisCard';
 
 export default function PatientDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const patientId = Number(params.id);
-  
-  // Custom hook untuk data patient
-  const { patient, loading, error } = usePatientDetail(patientId);
-  
-  // Handlers
-  const { goBack } = createPatientDetailHandlers(router);
 
-  // Loading state
+  const { patient, loading, error } = usePatientDetail(patientId);
+  const { goBack } = createPatientDetailHandlers();
+
   if (loading) {
     return (
       <Container className="py-8">
         <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-          <div className="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-gray-600">Memuat data pasien...</p>
         </div>
       </Container>
     );
   }
 
-  // Error state
   if (error || !patient) {
     return (
       <Container className="py-8">
         <div className="bg-red-50 border border-red-200 rounded-lg shadow-lg p-8 text-center">
           <div className="text-red-600 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-red-800 mb-2">Error</h2>
-          <p className="text-red-600 mb-4">{error || 'Pasien tidak ditemukan'}</p>
+          <p className="text-red-600 mb-4">
+            {error || 'Pasien tidak ditemukan'}
+          </p>
           <button
             onClick={goBack}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
@@ -54,18 +50,15 @@ export default function PatientDetailPage() {
     );
   }
 
-  // Success state - Display patient data
   return (
     <Container className="py-8">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        
-        {/* Header */}
+        {/* Header pasien */}
         <PatientHeader patient={patient} />
 
-        {/* Patient Info Grid */}
+        {/* Grid info utama */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
             <PatientInfoCard
               icon={Activity}
               iconColor="text-blue-600"
@@ -159,8 +152,8 @@ export default function PatientDetailPage() {
           {/* Info Footer */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-blue-800 text-sm">
-              💡 <strong>Info:</strong> Gunakan menu di atas untuk navigasi ke halaman lain 
-              (Alat Invasif, Hemodinamik, Instruksi Obat, dll)
+              💡 <strong>Info:</strong> Gunakan menu di atas untuk navigasi ke
+              halaman lain (Alat Invasif, Hemodinamik, Instruksi Obat, dll).
             </p>
           </div>
         </div>
