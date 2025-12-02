@@ -1,7 +1,7 @@
 // app/patients/[id]/alatinvansive/page.tsx
-// (pindah ke src/app/... kalau struktur kamu pakai src/)
 
 import AlatInvasifClient from "./components/AlatInvasifClient";
+import { DUMMY_MONITORING_PAGE2 } from "@/mocks/monitoringDummy";
 
 interface PageProps {
   params: { id: string };
@@ -12,16 +12,20 @@ interface PageProps {
 }
 
 const AlatInvasifPage = ({ params, searchParams }: PageProps) => {
-  const tanggal = searchParams?.tanggal ?? undefined;
+  const noRm = params.id;
+
+  // Untuk sementara pakai default kalau query tidak ada
+  const tanggal = searchParams?.tanggal ?? "2024-12-01";
   const hariPerawatanKe = searchParams?.hariPerawatanKe
     ? Number(searchParams.hariPerawatanKe)
-    : undefined;
+    : 1;
 
   return (
     <AlatInvasifClient
-      noRm={params.id}
+      noRm={noRm}
       tanggal={tanggal}
       hariPerawatanKe={hariPerawatanKe}
+      initialData={DUMMY_MONITORING_PAGE2} // ⬅️ ini perbaikannya
     />
   );
 };

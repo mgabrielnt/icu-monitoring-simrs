@@ -1,7 +1,7 @@
 // app/patients/[id]/perencanaanperawat/page.tsx
 
 import ImplementasiClient from "./components/ImplementasiClient";
-import { fetchImplementasi } from "@/lib/icuMonitoring";
+import { DUMMY_IMPLEMENTASI_ACTIVITIES } from "@/mocks/monitoringDummy";
 
 interface PageProps {
   params: { id: string };
@@ -11,29 +11,24 @@ interface PageProps {
   };
 }
 
-const PerencanaanPerawatPage = async ({
+export default function PerencanaanPerawatPage({
   params,
   searchParams,
-}: PageProps) => {
+}: PageProps) {
   const noRm = params.id;
-  const tanggal = searchParams?.tanggal ?? undefined;
+  const tanggal = searchParams?.tanggal ?? "2024-12-01";
   const hariPerawatanKe = searchParams?.hariPerawatanKe
     ? Number(searchParams.hariPerawatanKe)
-    : undefined;
-
-  const initialActivities =
-    tanggal != null
-      ? await fetchImplementasi(noRm, tanggal)
-      : null;
+    : 3;
 
   return (
     <ImplementasiClient
       noRm={noRm}
       tanggal={tanggal}
       hariPerawatanKe={hariPerawatanKe}
-      initialActivities={initialActivities}
+      initialActivities={DUMMY_IMPLEMENTASI_ACTIVITIES}
+      // ❌ Jangan kirim fungsi dari Server ke Client
+      // onSaved={() => { ... }}
     />
   );
-};
-
-export default PerencanaanPerawatPage;
+}
