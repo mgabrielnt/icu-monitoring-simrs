@@ -1,7 +1,7 @@
 // app/patients/[id]/perkembanganpasien/page.tsx
 
 import CatatanTerintegrasiClient from "./components/CatatanTerintegrasiClient";
-import { fetchProgressNotes } from "@/lib/icuMonitoring";
+import { DUMMY_PROGRESS_NOTES } from "@/mocks/monitoringDummy";
 
 interface PageProps {
   params: { id: string };
@@ -11,29 +11,24 @@ interface PageProps {
   };
 }
 
-const PerkembanganPasienPage = async ({
+export default function PerkembanganPasienPage({
   params,
   searchParams,
-}: PageProps) => {
+}: PageProps) {
   const noRm = params.id;
-  const tanggal = searchParams?.tanggal ?? undefined;
+  const tanggal = searchParams?.tanggal ?? "2024-12-01";
   const hariPerawatanKe = searchParams?.hariPerawatanKe
     ? Number(searchParams.hariPerawatanKe)
-    : undefined;
-
-  const initialNotes =
-    tanggal != null
-      ? await fetchProgressNotes(noRm, tanggal)
-      : null;
+    : 3;
 
   return (
     <CatatanTerintegrasiClient
       noRm={noRm}
       tanggal={tanggal}
       hariPerawatanKe={hariPerawatanKe}
-      initialNotes={initialNotes}
+      initialNotes={DUMMY_PROGRESS_NOTES}
+      // ❌ Jangan kirim fungsi dari Server ke Client
+      // onSaved={() => { ... }}
     />
   );
-};
-
-export default PerkembanganPasienPage;
+}

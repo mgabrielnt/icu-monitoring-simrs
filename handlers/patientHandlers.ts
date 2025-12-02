@@ -1,9 +1,14 @@
 // handlers/patientHandlers.ts
+"use client";
 
-import { NextRouter } from 'next/navigation';
-export function handleBackToDashboard(router: NextRouter) {
+// Router minimal yang kita butuhkan: hanya butuh .push()
+type RouterLike = {
+  push: (href: string) => void;
+};
+
+export function handleBackToDashboard(router: RouterLike) {
   return () => {
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 }
 
@@ -12,7 +17,9 @@ export function handleBackToDashboard(router: NextRouter) {
  */
 export function handleGoBack() {
   return () => {
-    window.history.back();
+    if (typeof window !== "undefined") {
+      window.history.back();
+    }
   };
 }
 
@@ -23,10 +30,10 @@ export function handleRefreshPatient(refreshFn: () => Promise<void>) {
   return async () => {
     try {
       await refreshFn();
-      alert('Data pasien berhasil di-refresh!');
+      alert("Data pasien berhasil di-refresh!");
     } catch (error) {
-      console.error('Error refreshing patient:', error);
-      alert('Gagal refresh data pasien');
+      console.error("Error refreshing patient:", error);
+      alert("Gagal refresh data pasien");
     }
   };
 }
@@ -36,14 +43,16 @@ export function handleRefreshPatient(refreshFn: () => Promise<void>) {
  */
 export function handlePrintPatientData() {
   return () => {
-    window.print();
+    if (typeof window !== "undefined") {
+      window.print();
+    }
   };
 }
 
 /**
  * Create patient detail handlers
  */
-export function createPatientDetailHandlers(router: NextRouter) {
+export function createPatientDetailHandlers(router: RouterLike) {
   return {
     goBackToDashboard: handleBackToDashboard(router),
     goBack: handleGoBack(),

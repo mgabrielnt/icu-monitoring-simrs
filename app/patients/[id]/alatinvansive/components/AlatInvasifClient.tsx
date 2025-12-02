@@ -16,8 +16,9 @@ export interface AlatInvasifClientProps {
   tanggal?: string;
   hariPerawatanKe?: number;
   initialData?: MonitoringPage2DTO | null;
-  onSaved?: () => void;
+  onSaved?: () => void; // ← optional
 }
+
 
 const AlatInvasifClient: React.FC<AlatInvasifClientProps> = ({
   noRm,
