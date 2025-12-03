@@ -13,7 +13,8 @@ import type {
   BalanceCairEntry,
 } from "@/types/alatinvansive";
 
-import AlatInvansiveHeaderCard from "./AlatInvansiveHeaderCard";
+import AlatInvansiveHeroHeader from "./AlatInvansiveHeroHeader";
+import AlatInvansiveSnapshotPanel from "./AlatInvansiveSnapshotPanel";
 import AlatInvansiveFormModal from "./AlatInvansiveFormModal";
 import ResikoJatuhFormModal from "./ResikoJatuhFormModal";
 import BalanceCairFormModal from "./BalanceCairFormModal";
@@ -176,9 +177,11 @@ export default function AlatInvansivePageClient({ patientId }: Props) {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-3 sm:px-4 lg:px-0">
-        {/* Header summary */}
-        <AlatInvansiveHeaderCard
-          patientId={patientId}
+        {/* Header gradient ala PerkembanganPasien */}
+        <AlatInvansiveHeroHeader patientId={patientId} />
+
+        {/* Panel tombol + snapshot form */}
+        <AlatInvansiveSnapshotPanel
           snapshot={snapshot}
           onOpenInvansif={openNewInvansif}
           onOpenResikoJatuh={openNewResiko}
@@ -191,16 +194,14 @@ export default function AlatInvansivePageClient({ patientId }: Props) {
             entries={invansifEntries}
             onEdit={handleEditInvansif}
           />
-          <ResikoJatuhTable
-            entries={resikoEntries}
-            onEdit={handleEditResiko}
-          />
+          <ResikoJatuhTable entries={resikoEntries} onEdit={handleEditResiko} />
           <BalanceCairTable
             entries={balanceEntries}
             onEdit={handleEditBalance}
           />
         </div>
       </div>
+
 
       {/* Modals */}
       <AlatInvansiveFormModal

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Shield, Activity, Droplet, User, CalendarDays } from "lucide-react";
-import { postJson } from "@/lib/api";
+import { postJson } from "@/lib/api-client";
 
 export interface AlatInvasifProps {
   noRm?: string;

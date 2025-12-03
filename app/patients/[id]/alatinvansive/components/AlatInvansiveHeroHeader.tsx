@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react';
 
-export default function PerkembanganPasienHeader() {
+interface Props {
+  patientId: string;
+}
+
+export default function AlatInvansiveHeroHeader({ patientId }: Props) {
   const [now, setNow] = useState(new Date());
   
   useEffect(() => {
@@ -82,12 +86,12 @@ export default function PerkembanganPasienHeader() {
                 ))}
               </div>
               <span className="text-[9px] font-bold text-emerald-300/70 uppercase tracking-[0.3em]">
-                Perkembangan Pasien • SOAP / ADIME
+                Alat Invasif • Resiko Jatuh • Balance Cair
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight tracking-tight mb-2">
-              Catatan Perkembangan Harian
+              Form Alat Invasif &amp; Balance Cair
             </h1>
 
             <div className="flex items-start gap-2">
@@ -95,7 +99,7 @@ export default function PerkembanganPasienHeader() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p className="text-xs text-emerald-100/75 leading-relaxed">
-                Format SOAP/ADIME dengan kategori O, A, P, hasil asesmen, dan instruksi PPA
+                Form untuk mencatat pemasangan alat invasif, penilaian resiko jatuh, dan balance cairan 24 jam
               </p>
             </div>
           </div>

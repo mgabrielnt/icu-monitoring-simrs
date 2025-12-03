@@ -11,7 +11,7 @@ import {
   CalendarDays,
   Clock,
 } from "lucide-react";
-import { postJson } from "@/lib/api";
+import { postJson } from "@/lib/api-client";
 
 export interface HemodinamikProps {
   noRm?: string;
