@@ -1,9 +1,9 @@
-// src/hooks/useProgressNotes.ts
-
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
-import {
+import { useState } from "react";
+import type { FormEvent } from "react";
+
+import type {
   MonitoringMeta,
   ProgressNoteDTO,
   ProgressNoteState,
@@ -11,141 +11,154 @@ import {
 } from "@/types/monitoring";
 import { saveProgressNotes } from "@/lib/icuMonitoring";
 
-const createLocalId = () => Math.random().toString(36).slice(2);
+export type ProgressNoteField =
+  | "tglJam"
+  | "jenis"
+  | "hasilAssesmen"
+  | "instruksiPPA"
+  | "namaPerawat";
 
-const nowDateTimeLocal = () => {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  const local = new Date(d.getTime() - off * 60_000);
-  return local.toISOString().slice(0, 16);
-};
-
-const mapInitialNotesToState = (
-  initialNotes?: ProgressNoteDTO[] | null
-): ProgressNoteState[] => {
-  if (!initialNotes || initialNotes.length === 0) {
-    return [
-      {
-        id: undefined,
-        tglJam: nowDateTimeLocal(),
-        jenis: "O",
-        hasilAssesmen: "",
-        instruksiPPA: "",
-        namaPerawat: "",
-        _localId: createLocalId(),
-      },
-    ];
-  }
-
-  return initialNotes.map((n) => ({
-    ...n,
-    tglJam: n.tglJam || nowDateTimeLocal(),
-    _localId: createLocalId(),
-  }));
-};
-
-interface UseProgressNotesOptions {
+export interface UseProgressNotesArgs {
   meta: MonitoringMeta;
   initialNotes?: ProgressNoteDTO[] | null;
   onSaved?: () => void;
 }
 
-export const useProgressNotes = ({
+export function useProgressNotes({
   meta,
   initialNotes,
   onSaved,
-}: UseProgressNotesOptions) => {
+}: UseProgressNotesArgs) {
   const [notes, setNotes] = useState<ProgressNoteState[]>(() =>
-    mapInitialNotesToState(initialNotes)
+    mapInitialNotes(initialNotes, meta)
   );
-  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const [deletedNoteIds, setDeletedNoteIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const handleNoteChange = useCallback(
-    (
-      localId: string,
-      field: keyof ProgressNoteDTO,
-      value: string
-    ) => {
-      setNotes((prev) =>
-        prev.map((n) =>
-          n._localId === localId ? { ...n, [field]: value } : n
-        )
-      );
-    },
-    []
-  );
+  function addNote() {
+    setNotes((prev) => [...prev, createEmptyNote(meta)]);
+  }
 
-  const handleAddNote = useCallback(() => {
-    setNotes((prev) => [
-      ...prev,
-      {
-        id: undefined,
-        tglJam: nowDateTimeLocal(),
-        jenis: "O",
-        hasilAssesmen: "",
-        instruksiPPA: "",
-        namaPerawat: "",
-        _localId: createLocalId(),
-      },
-    ]);
-  }, []);
+  function updateNoteField(
+    localId: string,
+    field: ProgressNoteField,
+    value: string
+  ) {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note._localId === localId ? { ...note, [field]: value } : note
+      )
+    );
+  }
 
-  const handleRemoveNote = useCallback((localId: string) => {
+  function removeNote(localId: string) {
     setNotes((prev) => {
-      if (prev.length === 1) return prev;
-      const target = prev.find((n) => n._localId === localId);
-      if (target?.id) {
-        setDeletedIds((ids) => [...ids, target.id as string]);
+      const note = prev.find((n) => n._localId === localId);
+      if (note?.id) {
+        setDeletedNoteIds((ids) =>
+          ids.includes(note.id!) ? ids : [...ids, note.id!]
+        );
       }
       return prev.filter((n) => n._localId !== localId);
     });
-  }, []);
+  }
 
-  const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-      setSubmitError(null);
-      setSubmitSuccess(false);
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-      try {
-        const payload: SaveProgressNotesPayload = {
-          meta,
-          notes: notes.map(({ _localId, ...rest }) => rest),
-          deletedNoteIds: deletedIds,
-        };
+    if (!meta.noRm || !meta.tanggal) {
+      setSubmitError("No. RM dan tanggal wajib diisi.");
+      return;
+    }
 
-        const res = await saveProgressNotes(payload);
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
 
-        if (res.notes && Array.isArray(res.notes)) {
-          setNotes(mapInitialNotesToState(res.notes));
-          setDeletedIds([]);
-        }
+    const payload: SaveProgressNotesPayload = {
+      meta,
+      notes: notes.map(stripLocalId),
+      deletedNoteIds,
+    };
 
-        setSubmitSuccess(true);
-        if (onSaved) onSaved();
-      } catch (error) {
-        setSubmitError(
-          error instanceof Error ? error.message : "Terjadi kesalahan"
-        );
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [meta, notes, deletedIds, onSaved]
-  );
+    const res = await saveProgressNotes(payload);
+
+    if (!res.ok) {
+      setSubmitError(
+        res.message ?? "Gagal menyimpan catatan perkembangan."
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
+    setSubmitSuccess(true);
+    setDeletedNoteIds([]);
+
+    if (Array.isArray(res.notes)) {
+      setNotes(mapInitialNotes(res.notes, meta));
+    }
+
+    onSaved?.();
+
+    setIsSubmitting(false);
+  }
 
   return {
     notes,
     isSubmitting,
     submitError,
     submitSuccess,
-    handleNoteChange,
-    handleAddNote,
-    handleRemoveNote,
+    addNote,
+    updateNoteField,
+    removeNote,
     handleSubmit,
   };
-};
+}
+
+/* ========= Helpers ========= */
+
+function createLocalId() {
+  return `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+function createEmptyNote(meta: MonitoringMeta): ProgressNoteState {
+  const baseDate = meta.tanggal ?? new Date().toISOString().slice(0, 10);
+  const defaultTime = "08:00";
+  const tglJam = `${baseDate}T${defaultTime}`;
+
+  return {
+    _localId: createLocalId(),
+    id: undefined,
+    tglJam,
+    jenis: "O",
+    hasilAssesmen: "",
+    instruksiPPA: "",
+    namaPerawat: "",
+  };
+}
+
+function mapInitialNotes(
+  notes: ProgressNoteDTO[] | null | undefined,
+  meta: MonitoringMeta
+): ProgressNoteState[] {
+  if (!notes || notes.length === 0) {
+    return [createEmptyNote(meta)];
+  }
+
+  return notes
+    .slice()
+    .sort((a, b) => a.tglJam.localeCompare(b.tglJam))
+    .map((n) => ({
+      ...n,
+      _localId: createLocalId(),
+    }));
+}
+
+function stripLocalId(note: ProgressNoteState): ProgressNoteDTO {
+  const { _localId, ...rest } = note;
+  return rest;
+}

@@ -1,4 +1,8 @@
-// src/types/monitoring.ts
+// types/monitoring.d.ts
+
+/* ============
+ * META UMUM
+ * ============ */
 
 export interface MonitoringMeta {
   noRm: string | null;
@@ -110,8 +114,9 @@ export interface SaveImplementasiResponse {
   activities?: ImplementasiActivityDTO[];
 }
 
-/* ===========
+/* =========== 
  * STATE TYPES
+ * (dipakai untuk state React, dsb.)
  * =========== */
 
 export interface AlatInvasifState extends AlatInvasifItemDTO {
@@ -125,4 +130,67 @@ export interface ProgressNoteState extends ProgressNoteDTO {
 export interface ImplementasiActivityState
   extends ImplementasiActivityDTO {
   _localId: string;
+}
+
+export type ImplementasiField = "jenisKegiatan" | "jam" | "paraf";
+
+
+/* ===========================
+ * UI TYPES – PAGE 2 (ALAT INVASIF)
+ * dipakai di komponen:
+ * - AlatInvasifForm
+ * - DeviceGroupSection
+ * - useAlatInvasif hook
+ * =========================== */
+
+export type DeviceGroup = "INVASIF" | "TUBE";
+
+export type DeviceCode =
+  | "IV_LINE"
+  | "CVC"
+  | "ARTERIAL_LINE"
+  | "SWANZ_GANZ"
+  | "OTT_NTT_TT"
+  | "NGT"
+  | "WSD"
+  | "DRAIN"
+  | "URINE_CATHETER"
+  | "LUNAK";
+
+export type DeviceField = "ukuran" | "lokasi" | "tglPasang";
+
+export interface DeviceRowUI {
+  code: DeviceCode;
+  label: string;
+  group: DeviceGroup;
+  ukuran: string;
+  lokasi: string;
+  tglPasang: string;
+}
+
+/**
+ * Form risiko jatuh di UI (string untuk input text/number),
+ * nanti di-mapping ke RisikoJatuhDTO (number | null) sebelum kirim ke backend.
+ */
+export interface FallRiskForm {
+  riwayatJatuh: string;
+  kondisiKesehatan: string;
+  bantuanAmbulansi: string;
+  terapiIVAntikoagulan: string;
+  gayaBerjalan: string;
+  statusMental: string;
+  totalSkor: string;
+}
+
+/**
+ * Form balance cairan 24 jam di UI (string dulu),
+ * nanti dikonversi ke number | null.
+ */
+export interface FluidBalanceForm {
+  cairanMasuk: string;
+  cairanKeluar: string;
+  iwl: string;
+  bc24Jam: string;
+  bcSebelumnya: string;
+  bcKumulatif: string;
 }

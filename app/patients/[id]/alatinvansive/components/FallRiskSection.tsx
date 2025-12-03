@@ -1,30 +1,18 @@
-// app/patients/[id]/alatinvansive/components/AlatInvasifFallRiskCard.tsx
-
-"use client";
+// app/patients/[id]/alatinvansive/components/FallRiskSection.tsx
 
 import React from "react";
 import { Activity } from "lucide-react";
+import type { FallRiskForm } from "@/types/monitoring";
 
-interface AlatInvasifFallRiskCardProps {
-  fallRisk: Record<string, string>;
-  setFallRisk: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
+interface FallRiskSectionProps {
+  fallRisk: FallRiskForm;
+  setFallRisk: React.Dispatch<React.SetStateAction<FallRiskForm>>;
 }
 
-const AlatInvasifFallRiskCard: React.FC<AlatInvasifFallRiskCardProps> = ({
+const FallRiskSection: React.FC<FallRiskSectionProps> = ({
   fallRisk,
   setFallRisk,
 }) => {
-  const fields: Array<[keyof typeof fallRisk, string]> = [
-    ["riwayatJatuh", "1. Riwayat jatuh"],
-    ["kondisiKesehatan", "2. Kondisi kesehatan"],
-    ["bantuanAmbulansi", "3. Bantuan ambulansi"],
-    ["terapiIVAntikoagulan", "4. Terapi IV / Antikoagulan"],
-    ["gayaBerjalan", "5. Gaya berjalan / berpindah"],
-    ["statusMental", "6. Status mental"],
-  ];
-
   return (
     <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
       <div className="flex items-center justify-between gap-2">
@@ -34,30 +22,38 @@ const AlatInvasifFallRiskCard: React.FC<AlatInvasifFallRiskCardProps> = ({
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900">
-              Resiko Jatuh
+              Risiko Jatuh (Skor PR)
             </h3>
             <p className="text-[11px] text-emerald-900/80">
-              Input skor tiap komponen, total skor (PR) bisa dikalkulasi backend
-              untuk kategori risiko.
+              Input skor tiap komponen bila sudah dinilai (boleh kosong
+              bila belum).
             </p>
           </div>
         </div>
         <span className="rounded-full bg-emerald-900 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
-          Skor PR
+          Skor
         </span>
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        {fields.map(([field, label]) => (
-          <label key={field as string} className="space-y-1">
+        {(
+          [
+            ["riwayatJatuh", "1. Riwayat jatuh"],
+            ["kondisiKesehatan", "2. Kondisi kesehatan"],
+            ["bantuanAmbulansi", "3. Bantuan ambulansi"],
+            ["terapiIVAntikoagulan", "4. Terapi IV / Antikoagulan"],
+            ["gayaBerjalan", "5. Gaya berjalan / berpindah"],
+            ["statusMental", "6. Status mental"],
+          ] as const
+        ).map(([field, label]) => (
+          <label key={field} className="space-y-1">
             <span className="block text-[11px] font-medium text-slate-800">
               {label}
             </span>
             <input
               type="number"
               min={0}
-              required
-              value={fallRisk[field] ?? ""}
+              value={fallRisk[field]}
               onChange={(e) =>
                 setFallRisk((prev) => ({
                   ...prev,
@@ -78,8 +74,7 @@ const AlatInvasifFallRiskCard: React.FC<AlatInvasifFallRiskCardProps> = ({
           <input
             type="number"
             min={0}
-            required
-            value={fallRisk.totalSkor ?? ""}
+            value={fallRisk.totalSkor}
             onChange={(e) =>
               setFallRisk((prev) => ({
                 ...prev,
@@ -90,11 +85,12 @@ const AlatInvasifFallRiskCard: React.FC<AlatInvasifFallRiskCardProps> = ({
           />
         </label>
         <p className="text-[11px] text-emerald-900/80">
-          Logika kategori (rendah/sedang/tinggi) bisa ditentukan di backend.
+          Kategori risiko (rendah / sedang / tinggi) dapat dihitung di
+          backend.
         </p>
       </div>
     </div>
   );
 };
 
-export default AlatInvasifFallRiskCard;
+export default FallRiskSection;

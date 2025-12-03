@@ -1,9 +1,10 @@
-// app/patients/[id]/perkembanganpasien/components/CatatanTerintegrasiClient.tsx
-
 "use client";
 
 import React from "react";
-import { MonitoringMeta, ProgressNoteDTO } from "@/types/monitoring";
+import type {
+  MonitoringMeta,
+  ProgressNoteDTO,
+} from "@/types/monitoring";
 import { useProgressNotes } from "@/hooks/useProgressNotes";
 import CatatanTerintegrasiHeader from "./CatatanTerintegrasiHeader";
 import CatatanTerintegrasiForm from "./CatatanTerintegrasiForm";
@@ -20,8 +21,8 @@ const CatatanTerintegrasiClient: React.FC<
   CatatanTerintegrasiClientProps
 > = ({ noRm, tanggal, hariPerawatanKe, initialNotes, onSaved }) => {
   const meta: MonitoringMeta = {
-    noRm: noRm || null,
-    tanggal: tanggal || null,
+    noRm: noRm ?? null,
+    tanggal: tanggal ?? null,
     hariPerawatanKe:
       typeof hariPerawatanKe === "number" ? hariPerawatanKe : null,
   };
@@ -31,15 +32,11 @@ const CatatanTerintegrasiClient: React.FC<
     isSubmitting,
     submitError,
     submitSuccess,
-    handleNoteChange,
-    handleAddNote,
-    handleRemoveNote,
+    addNote,
+    updateNoteField,
+    removeNote,
     handleSubmit,
-  } = useProgressNotes({
-    meta,
-    initialNotes,
-    onSaved,
-  });
+  } = useProgressNotes({ meta, initialNotes, onSaved });
 
   return (
     <div className="space-y-5">
@@ -54,9 +51,9 @@ const CatatanTerintegrasiClient: React.FC<
         isSubmitting={isSubmitting}
         submitError={submitError}
         submitSuccess={submitSuccess}
-        handleNoteChange={handleNoteChange}
-        handleAddNote={handleAddNote}
-        handleRemoveNote={handleRemoveNote}
+        addNote={addNote}
+        updateNoteField={updateNoteField}
+        removeNote={removeNote}
         handleSubmit={handleSubmit}
       />
     </div>

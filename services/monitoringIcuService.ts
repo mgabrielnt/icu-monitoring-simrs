@@ -1,102 +1,96 @@
-// src/services/monitoringIcuService.ts
+// services/monitoringIcuService.ts
 
-import { JENIS_ALAT_OPTIONS } from "@/lib/constants";
 import type {
+  MonitoringMeta,
+  SaveMonitoringPage2Payload,
+  SaveMonitoringPage2Response,
+  AlatInvasifItemDTO,
+  RisikoJatuhDTO,
+  BalanceCairanDTO,
   DeviceRowUI,
   FallRiskForm,
   FluidBalanceForm,
-  MonitoringMeta,
-  SaveMonitoringPage2Payload,
 } from "@/types/monitoring";
 
-export const createAlatInvasifId = () =>
-  Math.random().toString(36).slice(2);
+// Frontend pakai route Next.js sendiri.
+// Nanti kalau mau langsung ke backend luar, cukup ganti jadi URL backend.
+const PAGE2_ENDPOINT = "/api/icu/monitoring/page-2";
 
-export const createEmptyDeviceRow = (): DeviceRowUI => ({
-  id: createAlatInvasifId(),
-  jenisAlatCode: "",
-  jenisAlatCustom: "",
-  ukuran: "",
-  lokasi: "",
-  tglPasang: "",
-  hariKe: "",
-});
+const toNumberOrNull = (value: string): number | null => {
+  if (!value) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
 
-export const buildMonitoringPage2Payload = (args: {
-  meta: MonitoringMeta;
-  rows: DeviceRowUI[];
-  fallRisk: FallRiskForm;
-  fluidBalance: FluidBalanceForm;
-}): SaveMonitoringPage2Payload => {
-  const { meta, rows, fallRisk, fluidBalance } = args;
-
-  const alatInvasif = rows.map((r) => {
-    const opt = JENIS_ALAT_OPTIONS.find(
-      (o) => o.value === r.jenisAlatCode
-    );
-    const labelFromOption = opt?.label ?? "";
-    const namaJenisAlat =
-      r.jenisAlatCode === "OTHER"
-        ? r.jenisAlatCustom.trim()
-        : labelFromOption;
-
-    return {
-      kodeJenisAlat: r.jenisAlatCode || null,
-      namaJenisAlat: namaJenisAlat || null,
-      ukuran: r.ukuran.trim() || null,
-      lokasi: r.lokasi.trim() || null,
+const mapDevicesToDto = (rows: DeviceRowUI[]): AlatInvasifItemDTO[] =>
+  rows
+    // hanya kirim baris yang ada minimal satu kolom terisi
+    .filter((r) => r.ukuran || r.lokasi || r.tglPasang)
+    .map<AlatInvasifItemDTO>((r) => ({
+      id: undefined,
+      kodeJenisAlat: r.code,
+      namaJenisAlat: r.label,
+      ukuran: r.ukuran || null,
+      lokasi: r.lokasi || null,
       tglPasang: r.tglPasang || null,
-      hariKe: r.hariKe ? Number(r.hariKe) : null,
-    };
-  });
+      hariKe: null,
+    }));
 
-  const risikoJatuh = {
-    riwayatJatuh: fallRisk.riwayatJatuh
-      ? Number(fallRisk.riwayatJatuh)
-      : null,
-    kondisiKesehatan: fallRisk.kondisiKesehatan
-      ? Number(fallRisk.kondisiKesehatan)
-      : null,
-    bantuanAmbulansi: fallRisk.bantuanAmbulansi
-      ? Number(fallRisk.bantuanAmbulansi)
-      : null,
-    terapiIVAntikoagulan: fallRisk.terapiIVAntikoagulan
-      ? Number(fallRisk.terapiIVAntikoagulan)
-      : null,
-    gayaBerjalan: fallRisk.gayaBerjalan
-      ? Number(fallRisk.gayaBerjalan)
-      : null,
-    statusMental: fallRisk.statusMental
-      ? Number(fallRisk.statusMental)
-      : null,
-    totalSkor: fallRisk.totalSkor
-      ? Number(fallRisk.totalSkor)
-      : null,
-  };
-
-  const balanceCairan = {
-    cairanMasuk: fluidBalance.cairanMasuk
-      ? Number(fluidBalance.cairanMasuk)
-      : null,
-    cairanKeluar: fluidBalance.cairanKeluar
-      ? Number(fluidBalance.cairanKeluar)
-      : null,
-    iwl: fluidBalance.iwl ? Number(fluidBalance.iwl) : null,
-    bc24Jam: fluidBalance.bc24Jam
-      ? Number(fluidBalance.bc24Jam)
-      : null,
-    bcSebelumnya: fluidBalance.bcSebelumnya
-      ? Number(fluidBalance.bcSebelumnya)
-      : null,
-    bcKumulatif: fluidBalance.bcKumulatif
-      ? Number(fluidBalance.bcKumulatif)
-      : null,
-  };
+const mapFallRiskForm = (form: FallRiskForm): RisikoJatuhDTO | null => {
+  const anyFilled = Object.values(form).some((v) => v !== "");
+  if (!anyFilled) return null;
 
   return {
-    meta,
-    alatInvasif,
-    risikoJatuh,
-    balanceCairan,
+    riwayatJatuh: toNumberOrNull(form.riwayatJatuh),
+    kondisiKesehatan: toNumberOrNull(form.kondisiKesehatan),
+    bantuanAmbulansi: toNumberOrNull(form.bantuanAmbulansi),
+    terapiIVAntikoagulan: toNumberOrNull(form.terapiIVAntikoagulan),
+    gayaBerjalan: toNumberOrNull(form.gayaBerjalan),
+    statusMental: toNumberOrNull(form.statusMental),
+    totalSkor: toNumberOrNull(form.totalSkor),
   };
 };
+
+const mapFluidBalanceForm = (
+  form: FluidBalanceForm
+): BalanceCairanDTO | null => {
+  const anyFilled = Object.values(form).some((v) => v !== "");
+  if (!anyFilled) return null;
+
+  return {
+    cairanMasuk: toNumberOrNull(form.cairanMasuk),
+    cairanKeluar: toNumberOrNull(form.cairanKeluar),
+    iwl: toNumberOrNull(form.iwl),
+    bc24Jam: toNumberOrNull(form.bc24Jam),
+    bcSebelumnya: toNumberOrNull(form.bcSebelumnya),
+    bcKumulatif: toNumberOrNull(form.bcKumulatif),
+  };
+};
+
+export async function saveMonitoringPage2(params: {
+  meta: MonitoringMeta;
+  devices: DeviceRowUI[];
+  fallRisk: FallRiskForm;
+  fluidBalance: FluidBalanceForm;
+}): Promise<SaveMonitoringPage2Response> {
+  const payload: SaveMonitoringPage2Payload = {
+    meta: params.meta,
+    alatInvasif: mapDevicesToDto(params.devices),
+    deletedAlatIds: [], // form statis, tidak ada delete ID
+    risikoJatuh: mapFallRiskForm(params.fallRisk),
+    balanceCairan: mapFluidBalanceForm(params.fluidBalance),
+  };
+
+  const res = await fetch(PAGE2_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Gagal menyimpan data monitoring page 2");
+  }
+
+  return (await res.json()) as SaveMonitoringPage2Response;
+}

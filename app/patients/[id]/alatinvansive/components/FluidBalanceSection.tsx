@@ -1,29 +1,29 @@
-// app/patients/[id]/alatinvansive/components/AlatInvasifFluidBalanceCard.tsx
-
 "use client";
 
 import React from "react";
 import { Droplet } from "lucide-react";
+import type { FluidBalanceForm } from "@/types/monitoring";
 
-interface AlatInvasifFluidBalanceCardProps {
-  fluidBalance: Record<string, string>;
+interface FluidBalanceSectionProps {
+  fluidBalance: FluidBalanceForm;
   setFluidBalance: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
+    React.SetStateAction<FluidBalanceForm>
   >;
 }
 
-const AlatInvasifFluidBalanceCard: React.FC<
-  AlatInvasifFluidBalanceCardProps
-> = ({ fluidBalance, setFluidBalance }) => {
-  const fields: Array<[keyof typeof fluidBalance, string]> = [
-    ["cairanMasuk", "Cairan masuk (24 jam)"],
-    ["cairanKeluar", "Cairan keluar (24 jam)"],
-    ["iwl", "IWL"],
-    ["bc24Jam", "BC 24 jam"],
-    ["bcSebelumnya", "BC sebelumnya"],
-    ["bcKumulatif", "BC kumulatif"],
-  ];
+const fields: Array<[keyof FluidBalanceForm, string]> = [
+  ["cairanMasuk", "Cairan masuk (24 jam)"],
+  ["cairanKeluar", "Cairan keluar (24 jam)"],
+  ["iwl", "IWL"],
+  ["bc24Jam", "BC 24 jam"],
+  ["bcSebelumnya", "BC sebelumnya"],
+  ["bcKumulatif", "BC kumulatif"],
+];
 
+const FluidBalanceSection: React.FC<FluidBalanceSectionProps> = ({
+  fluidBalance,
+  setFluidBalance,
+}) => {
   return (
     <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
       <div className="flex items-center justify-between gap-2">
@@ -36,26 +36,25 @@ const AlatInvasifFluidBalanceCard: React.FC<
               Balance Cairan 24 Jam
             </h3>
             <p className="text-[11px] text-slate-600">
-              Rekap cairan masuk, keluar, IWL dan BC kumulatif untuk 24 jam.
+              Rekap cairan masuk, keluar, IWL, dan BC kumulatif 24 jam.
             </p>
           </div>
         </div>
         <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-800 ring-1 ring-sky-100">
-          Satuan mL / cc
+          mL / cc
         </span>
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
         {fields.map(([field, label]) => (
-          <label key={field as string} className="space-y-1">
+          <label key={field} className="space-y-1">
             <span className="block text-[11px] font-medium text-slate-800">
               {label}
             </span>
             <input
               type="number"
               min={0}
-              required
-              value={fluidBalance[field] ?? ""}
+              value={fluidBalance[field]}
               onChange={(e) =>
                 setFluidBalance((prev) => ({
                   ...prev,
@@ -69,11 +68,11 @@ const AlatInvasifFluidBalanceCard: React.FC<
       </div>
 
       <p className="text-[11px] text-slate-500">
-        Detail per jam (line, NGT, urine, drain, dll.) tercatat di tab Balance
-        Cairan; bagian ini hanya rekap 24 jam.
+        Detail per jam dicatat di tab Balance Cairan; bagian ini hanya rekap
+        24 jam.
       </p>
     </div>
   );
 };
 
-export default AlatInvasifFluidBalanceCard;
+export default FluidBalanceSection;

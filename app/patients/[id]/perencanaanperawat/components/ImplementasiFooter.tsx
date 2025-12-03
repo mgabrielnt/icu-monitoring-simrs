@@ -2,13 +2,13 @@
 
 import React from "react";
 
-interface AlatInvasifFooterProps {
+interface ImplementasiFooterProps {
   isSubmitting: boolean;
   submitError: string | null;
   submitSuccess: boolean;
 }
 
-const AlatInvasifFooter: React.FC<AlatInvasifFooterProps> = ({
+const ImplementasiFooter: React.FC<ImplementasiFooterProps> = ({
   isSubmitting,
   submitError,
   submitSuccess,
@@ -16,12 +16,8 @@ const AlatInvasifFooter: React.FC<AlatInvasifFooterProps> = ({
   return (
     <footer className="flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-[11px] text-slate-500">
-        Data dikirim ke{" "}
-        <code className="rounded bg-slate-100 px-1 py-0.5 text-[10px]">
-          /api/icu/monitoring/page-2
-        </code>{" "}
-        untuk disimpan sebagai alat_invasif, risiko_jatuh, dan
-        balance_cairan.
+        Catat jam dan paraf setelah kegiatan dilakukan sepanjang 24
+        jam hari tersebut.
       </p>
       <div className="flex items-center gap-2">
         {submitError && (
@@ -29,7 +25,7 @@ const AlatInvasifFooter: React.FC<AlatInvasifFooterProps> = ({
             {submitError}
           </span>
         )}
-        {submitSuccess && (
+        {submitSuccess && !submitError && (
           <span className="text-[11px] text-emerald-700">
             Data tersimpan. ✅
           </span>
@@ -37,13 +33,13 @@ const AlatInvasifFooter: React.FC<AlatInvasifFooterProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-full bg-emerald-700 px-5 py-1.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-70"
+          className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-slate-50 shadow-sm hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70"
         >
-          {isSubmitting ? "Menyimpan..." : "Simpan Page 2"}
+          {isSubmitting ? "Menyimpan..." : "Simpan Implementasi"}
         </button>
       </div>
     </footer>
   );
 };
 
-export default AlatInvasifFooter;
+export default ImplementasiFooter;

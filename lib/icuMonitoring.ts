@@ -1,6 +1,7 @@
-// src/lib/icuMonitoring.ts
+// lib/icuMonitoring.ts
 
 import { getJson, postJson } from "@/lib/api";
+
 import type {
   MonitoringPage2DTO,
   SaveMonitoringPage2Payload,
@@ -14,7 +15,7 @@ import type {
 } from "@/types/monitoring";
 
 /* ===========
- * PAGE 2
+ * PAGE 2 – ALAT INVASIF
  * =========== */
 
 export async function fetchMonitoringPage2(
@@ -41,7 +42,7 @@ export function saveMonitoringPage2(
 }
 
 /* ===========
- * PAGE 6
+ * PAGE 6 – CATATAN PERKEMBANGAN
  * =========== */
 
 export async function fetchProgressNotes(
@@ -68,7 +69,7 @@ export function saveProgressNotes(
 }
 
 /* ===========
- * PAGE 5
+ * PAGE 5 – IMPLEMENTASI NURSE
  * =========== */
 
 export async function fetchImplementasi(

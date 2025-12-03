@@ -1,65 +1,19 @@
-// src/hooks/useAlatInvasif.ts
-
+// hooks/useAlatInvasif.ts
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
-import {
-  AlatInvasifState,
-  BalanceCairanDTO,
+import { useState } from "react";
+
+import type {
   MonitoringMeta,
   MonitoringPage2DTO,
-  RisikoJatuhDTO,
-  SaveMonitoringPage2Payload,
+  DeviceRowUI,
+  DeviceCode,
+  DeviceField,
+  FallRiskForm,
+  FluidBalanceForm,
 } from "@/types/monitoring";
-import { saveMonitoringPage2 } from "@/lib/icuMonitoring";
-
-export const JENIS_ALAT_OPTIONS = [
-  { value: "IV_LINE", label: "IV Line" },
-  { value: "ARTERI_LINE", label: "Arteri line" },
-  { value: "SWANZ_GANZ", label: "Swanz Ganz" },
-  { value: "IABP", label: "IABP" },
-  { value: "SHEATH_TPM", label: "Sheath / TPM" },
-  { value: "OTT_ETT_ET", label: "OTT / ETT / ET" },
-  { value: "NGT", label: "NGT" },
-  { value: "DRAIN", label: "Drain" },
-  { value: "WSD", label: "WSD" },
-  { value: "D_CATH_D_CO", label: "D. Cath / D.CO" },
-  { value: "EPID_CATH", label: "EPID Cath" },
-  { value: "PNB_CATH", label: "PNB Cath" },
-  { value: "OTHER", label: "Lainnya (isi manual)" },
-] as const;
-
-export type JenisAlatValue = (typeof JENIS_ALAT_OPTIONS)[number]["value"];
-
-interface DeviceRowState {
-  _localId: string;
-  serverId?: string;
-  jenisAlatCode: JenisAlatValue | "";
-  jenisAlatCustom: string;
-  ukuran: string;
-  lokasi: string;
-  tglPasang: string;
-  hariKe: string;
-}
-
-interface FallRiskFormState {
-  riwayatJatuh: string;
-  kondisiKesehatan: string;
-  bantuanAmbulansi: string;
-  terapiIVAntikoagulan: string;
-  gayaBerjalan: string;
-  statusMental: string;
-  totalSkor: string;
-}
-
-interface FluidBalanceFormState {
-  cairanMasuk: string;
-  cairanKeluar: string;
-  iwl: string;
-  bc24Jam: string;
-  bcSebelumnya: string;
-  bcKumulatif: string;
-}
+import { DEVICE_DEFINITIONS } from "@/lib/alatInvasifConstants";
+import { saveMonitoringPage2 } from "@/services/monitoringIcuService";
 
 interface UseAlatInvasifOptions {
   meta: MonitoringMeta;
@@ -67,282 +21,161 @@ interface UseAlatInvasifOptions {
   onSaved?: () => void;
 }
 
-const createLocalId = () => Math.random().toString(36).slice(2);
+const emptyFallRisk: FallRiskForm = {
+  riwayatJatuh: "",
+  kondisiKesehatan: "",
+  bantuanAmbulansi: "",
+  terapiIVAntikoagulan: "",
+  gayaBerjalan: "",
+  statusMental: "",
+  totalSkor: "",
+};
 
-const mapInitialRows = (
-  data?: MonitoringPage2DTO | null
-): DeviceRowState[] => {
-  if (!data || !data.alatInvasif || data.alatInvasif.length === 0) {
-    return [
-      {
-        _localId: createLocalId(),
-        serverId: undefined,
-        jenisAlatCode: "",
-        jenisAlatCustom: "",
-        ukuran: "",
-        lokasi: "",
-        tglPasang: "",
-        hariKe: "",
-      },
-    ];
+const emptyFluidBalance: FluidBalanceForm = {
+  cairanMasuk: "",
+  cairanKeluar: "",
+  iwl: "",
+  bc24Jam: "",
+  bcSebelumnya: "",
+  bcKumulatif: "",
+};
+
+const buildDevices = (
+  initial?: MonitoringPage2DTO | null
+): DeviceRowUI[] => {
+  const mapByCode = new Map<DeviceCode, MonitoringPage2DTO["alatInvasif"][number]>();
+
+  if (initial?.alatInvasif) {
+    for (const item of initial.alatInvasif) {
+      if (!item.kodeJenisAlat) continue;
+      mapByCode.set(item.kodeJenisAlat as DeviceCode, item);
+    }
   }
 
-  return data.alatInvasif.map((item) => {
-    const kode = item.kodeJenisAlat || "";
-    const customName =
-      !kode || kode === "OTHER"
-        ? item.namaJenisAlat ?? ""
-        : "";
+  return DEVICE_DEFINITIONS.map<DeviceRowUI>((def) => {
+    const dto = mapByCode.get(def.code);
 
     return {
-      _localId: createLocalId(),
-      serverId: item.id,
-      jenisAlatCode: (kode as JenisAlatValue) || "",
-      jenisAlatCustom: customName,
-      ukuran: item.ukuran ?? "",
-      lokasi: item.lokasi ?? "",
-      tglPasang: item.tglPasang ?? "",
-      hariKe: item.hariKe != null ? String(item.hariKe) : "",
+      code: def.code,
+      label: def.label,
+      group: def.group,
+      ukuran: dto?.ukuran ?? "",
+      lokasi: dto?.lokasi ?? "",
+      tglPasang: dto?.tglPasang ?? "",
     };
   });
 };
 
-const mapInitialFallRisk = (
-  data?: MonitoringPage2DTO | null
-): FallRiskFormState => {
-  const r = data?.risikoJatuh;
+const buildFallRisk = (
+  initial?: MonitoringPage2DTO | null
+): FallRiskForm => {
+  if (!initial?.risikoJatuh) return { ...emptyFallRisk };
+  const r = initial.risikoJatuh;
+
   return {
-    riwayatJatuh: r?.riwayatJatuh != null ? String(r.riwayatJatuh) : "",
-    kondisiKesehatan:
-      r?.kondisiKesehatan != null ? String(r.kondisiKesehatan) : "",
-    bantuanAmbulansi:
-      r?.bantuanAmbulansi != null ? String(r.bantuanAmbulansi) : "",
-    terapiIVAntikoagulan:
-      r?.terapiIVAntikoagulan != null
-        ? String(r.terapiIVAntikoagulan)
-        : "",
-    gayaBerjalan: r?.gayaBerjalan != null ? String(r.gayaBerjalan) : "",
-    statusMental: r?.statusMental != null ? String(r.statusMental) : "",
-    totalSkor: r?.totalSkor != null ? String(r.totalSkor) : "",
+    riwayatJatuh: r.riwayatJatuh?.toString() ?? "",
+    kondisiKesehatan: r.kondisiKesehatan?.toString() ?? "",
+    bantuanAmbulansi: r.bantuanAmbulansi?.toString() ?? "",
+    terapiIVAntikoagulan: r.terapiIVAntikoagulan?.toString() ?? "",
+    gayaBerjalan: r.gayaBerjalan?.toString() ?? "",
+    statusMental: r.statusMental?.toString() ?? "",
+    totalSkor: r.totalSkor?.toString() ?? "",
   };
 };
 
-const mapInitialBalance = (
-  data?: MonitoringPage2DTO | null
-): FluidBalanceFormState => {
-  const b = data?.balanceCairan;
+const buildFluidBalance = (
+  initial?: MonitoringPage2DTO | null
+): FluidBalanceForm => {
+  if (!initial?.balanceCairan) return { ...emptyFluidBalance };
+  const b = initial.balanceCairan;
+
   return {
-    cairanMasuk: b?.cairanMasuk != null ? String(b.cairanMasuk) : "",
-    cairanKeluar:
-      b?.cairanKeluar != null ? String(b.cairanKeluar) : "",
-    iwl: b?.iwl != null ? String(b.iwl) : "",
-    bc24Jam: b?.bc24Jam != null ? String(b.bc24Jam) : "",
-    bcSebelumnya:
-      b?.bcSebelumnya != null ? String(b.bcSebelumnya) : "",
-    bcKumulatif:
-      b?.bcKumulatif != null ? String(b.bcKumulatif) : "",
+    cairanMasuk: b.cairanMasuk?.toString() ?? "",
+    cairanKeluar: b.cairanKeluar?.toString() ?? "",
+    iwl: b.iwl?.toString() ?? "",
+    bc24Jam: b.bc24Jam?.toString() ?? "",
+    bcSebelumnya: b.bcSebelumnya?.toString() ?? "",
+    bcKumulatif: b.bcKumulatif?.toString() ?? "",
   };
 };
 
-export const useAlatInvasifForm = ({
+export function useAlatInvasif({
   meta,
   initialData,
   onSaved,
-}: UseAlatInvasifOptions) => {
-  const [rows, setRows] = useState<DeviceRowState[]>(() =>
-    mapInitialRows(initialData)
+}: UseAlatInvasifOptions) {
+  const [devices, setDevices] = useState<DeviceRowUI[]>(() =>
+    buildDevices(initialData)
   );
-  const [deletedAlatIds, setDeletedAlatIds] = useState<string[]>([]);
-  const [fallRisk, setFallRisk] = useState<FallRiskFormState>(() =>
-    mapInitialFallRisk(initialData)
+  const [fallRisk, setFallRisk] = useState<FallRiskForm>(() =>
+    buildFallRisk(initialData)
   );
-  const [fluidBalance, setFluidBalance] =
-    useState<FluidBalanceFormState>(() =>
-      mapInitialBalance(initialData)
-    );
+  const [fluidBalance, setFluidBalance] = useState<FluidBalanceForm>(() =>
+    buildFluidBalance(initialData)
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const updateRow = useCallback(
-    (
-      localId: string,
-      field: keyof Omit<
-        DeviceRowState,
-        "_localId" | "serverId"
-      >,
-      value: string
-    ) => {
-      setRows((prev) =>
-        prev.map((row) =>
-          row._localId === localId
-            ? {
-                ...row,
-                [field]: value,
-                ...(field === "jenisAlatCode" && value !== "OTHER"
-                  ? { jenisAlatCustom: "" }
-                  : {}),
-              }
-            : row
-        )
-      );
-    },
-    []
-  );
+  const updateDeviceField = (
+    code: DeviceCode,
+    field: DeviceField,
+    value: string
+  ) => {
+    setDevices((prev) =>
+      prev.map((row) =>
+        row.code === code ? { ...row, [field]: value } : row
+      )
+    );
+  };
 
-  const addRow = useCallback(() => {
-    setRows((prev) => [
-      ...prev,
-      {
-        _localId: createLocalId(),
-        serverId: undefined,
-        jenisAlatCode: "",
-        jenisAlatCustom: "",
-        ukuran: "",
-        lokasi: "",
-        tglPasang: "",
-        hariKe: "",
-      },
-    ]);
-  }, []);
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    e.preventDefault();
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    setIsSubmitting(true);
 
-  const removeRow = useCallback((localId: string) => {
-    setRows((prev) => {
-      if (prev.length === 1) return prev;
-      const target = prev.find((r) => r._localId === localId);
-      if (target?.serverId) {
-        setDeletedAlatIds((ids) => [...ids, target.serverId!]);
+    try {
+      const res = await saveMonitoringPage2({
+        meta,
+        devices,
+        fallRisk,
+        fluidBalance,
+      });
+
+      if (!res.ok) {
+        throw new Error(res.message || "Gagal menyimpan data");
       }
-      return prev.filter((r) => r._localId !== localId);
-    });
-  }, []);
 
-  const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-      setSubmitError(null);
-      setSubmitSuccess(false);
-
-      try {
-        const alatInvasif = rows.map<AlatInvasifState>((r) => {
-          const opt = JENIS_ALAT_OPTIONS.find(
-            (o) => o.value === r.jenisAlatCode
-          );
-          const labelFromOption = opt?.label ?? "";
-          const namaJenisAlatRaw =
-            r.jenisAlatCode === "OTHER"
-              ? r.jenisAlatCustom.trim()
-              : labelFromOption;
-
-          return {
-            _localId: r._localId,
-            id: r.serverId,
-            kodeJenisAlat: r.jenisAlatCode || null,
-            namaJenisAlat: namaJenisAlatRaw || null,
-            ukuran: r.ukuran.trim() || null,
-            lokasi: r.lokasi.trim() || null,
-            tglPasang: r.tglPasang || null,
-            hariKe: r.hariKe ? Number(r.hariKe) : null,
-          };
-        });
-
-        const risiko: RisikoJatuhDTO | null = {
-          riwayatJatuh: fallRisk.riwayatJatuh
-            ? Number(fallRisk.riwayatJatuh)
-            : null,
-          kondisiKesehatan: fallRisk.kondisiKesehatan
-            ? Number(fallRisk.kondisiKesehatan)
-            : null,
-          bantuanAmbulansi: fallRisk.bantuanAmbulansi
-            ? Number(fallRisk.bantuanAmbulansi)
-            : null,
-          terapiIVAntikoagulan: fallRisk.terapiIVAntikoagulan
-            ? Number(fallRisk.terapiIVAntikoagulan)
-            : null,
-          gayaBerjalan: fallRisk.gayaBerjalan
-            ? Number(fallRisk.gayaBerjalan)
-            : null,
-          statusMental: fallRisk.statusMental
-            ? Number(fallRisk.statusMental)
-            : null,
-          totalSkor: fallRisk.totalSkor
-            ? Number(fallRisk.totalSkor)
-            : null,
-        };
-
-        const balance: BalanceCairanDTO | null = {
-          cairanMasuk: fluidBalance.cairanMasuk
-            ? Number(fluidBalance.cairanMasuk)
-            : null,
-          cairanKeluar: fluidBalance.cairanKeluar
-            ? Number(fluidBalance.cairanKeluar)
-            : null,
-          iwl: fluidBalance.iwl
-            ? Number(fluidBalance.iwl)
-            : null,
-          bc24Jam: fluidBalance.bc24Jam
-            ? Number(fluidBalance.bc24Jam)
-            : null,
-          bcSebelumnya: fluidBalance.bcSebelumnya
-            ? Number(fluidBalance.bcSebelumnya)
-            : null,
-          bcKumulatif: fluidBalance.bcKumulatif
-            ? Number(fluidBalance.bcKumulatif)
-            : null,
-        };
-
-        const payload: SaveMonitoringPage2Payload = {
-          meta,
-          alatInvasif: alatInvasif.map((a) => ({
-            id: a.id,
-            kodeJenisAlat: a.kodeJenisAlat,
-            namaJenisAlat: a.namaJenisAlat,
-            ukuran: a.ukuran,
-            lokasi: a.lokasi,
-            tglPasang: a.tglPasang,
-            hariKe: a.hariKe,
-          })),
-          deletedAlatIds,
-          risikoJatuh: risiko,
-          balanceCairan: balance,
-        };
-
-        const res = await saveMonitoringPage2(payload);
-
-        if (res.data) {
-          setRows(mapInitialRows(res.data));
-          setFallRisk(mapInitialFallRisk(res.data));
-          setFluidBalance(mapInitialBalance(res.data));
-          setDeletedAlatIds([]);
-        }
-
-        setSubmitSuccess(true);
-        if (onSaved) onSaved();
-      } catch (error) {
-        setSubmitError(
-          error instanceof Error ? error.message : "Terjadi kesalahan"
-        );
-      } finally {
-        setIsSubmitting(false);
+      if (res.data) {
+        setDevices(buildDevices(res.data));
+        setFallRisk(buildFallRisk(res.data));
+        setFluidBalance(buildFluidBalance(res.data));
       }
-    },
-    [rows, fallRisk, fluidBalance, meta, deletedAlatIds, onSaved]
-  );
+
+      setSubmitSuccess(true);
+      onSaved?.();
+    } catch (err: any) {
+      console.error("[saveMonitoringPage2] error", err);
+      setSubmitError(err?.message ?? "Terjadi kesalahan saat menyimpan");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return {
-    rows,
+    devices,
     fallRisk,
     fluidBalance,
     isSubmitting,
     submitError,
     submitSuccess,
-    updateRow,
-    addRow,
-    removeRow,
+    updateDeviceField,
     setFallRisk,
     setFluidBalance,
     handleSubmit,
   };
-};
+}

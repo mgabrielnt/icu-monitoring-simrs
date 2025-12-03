@@ -1,80 +1,64 @@
-// app/patients/[id]/perencanaanperawat/components/ImplementasiHeader.tsx
-
 "use client";
 
 import React from "react";
-import { CheckCircle, Clock, User } from "lucide-react";
+import { Calendar } from "lucide-react";
+import type { NurseShift } from "./implementasiUiTypes";
 
 interface ImplementasiHeaderProps {
-  noRm?: string;
   tanggal?: string;
-  hariPerawatanKe?: number;
-  systemTime: string;
+  onChangeDate: (newDate: string) => void;
+  selectedShift: NurseShift;
+  setSelectedShift: (shift: NurseShift) => void;
 }
 
 const ImplementasiHeader: React.FC<ImplementasiHeaderProps> = ({
-  noRm,
   tanggal,
-  hariPerawatanKe,
-  systemTime,
+  onChangeDate,
+  selectedShift,
+  setSelectedShift,
 }) => {
+  const shifts: NurseShift[] = ["PAGI", "SIANG", "MALAM"];
+
   return (
-    <section className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 shadow-lg">
-      <div className="relative flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-16 h-32 w-32 rounded-full bg-teal-300/10 blur-3xl" />
-
-        <div className="relative space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-700/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-100/90 ring-1 ring-emerald-500/40">
-            <span className="h-[1px] w-6 bg-emerald-200/80" />
-            ICU • Page 5
-          </div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-emerald-50 sm:text-xl">
-            <CheckCircle className="h-5 w-5 text-emerald-200" />
-            Perencanaan Perawat &amp; Implementasi
-          </h2>
-          <p className="max-w-xl text-xs text-emerald-100/90">
-            Jam pelaksanaan tercatat otomatis dari jam sistem saat kegiatan
-            disimpan. Perawat fokus pilih kegiatan dan paraf.
-          </p>
-        </div>
-
-        <div className="relative flex flex-col items-end gap-1 text-[11px] text-emerald-100/90">
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-800/70 px-3 py-1 ring-1 ring-emerald-500/40">
-            <Clock className="h-3.5 w-3.5 text-emerald-200" />
-            <span>
-              Jam sistem:{" "}
-              <span className="font-mono font-semibold text-emerald-50">
-                {systemTime}
-              </span>
-            </span>
-          </div>
-          {noRm && (
-            <div className="flex items-center gap-1">
-              <User className="h-3 w-3 text-emerald-200" />
-              <span>
-                No. RM:{" "}
-                <span className="font-semibold text-emerald-50">{noRm}</span>
-              </span>
-            </div>
-          )}
-          {tanggal && (
-            <span>
-              Tanggal:{" "}
-              <span className="font-semibold text-emerald-50">{tanggal}</span>
-            </span>
-          )}
-          {typeof hariPerawatanKe !== "undefined" && (
-            <span>
-              Hari perawatan ke:{" "}
-              <span className="font-semibold text-emerald-50">
-                {hariPerawatanKe}
-              </span>
-            </span>
-          )}
-        </div>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Shift selector */}
+      <div className="inline-flex overflow-hidden rounded-full border border-slate-200 bg-slate-50 text-[11px]">
+        {shifts.map((shift) => {
+          const active = shift === selectedShift;
+          return (
+            <button
+              key={shift}
+              type="button"
+              onClick={() => setSelectedShift(shift)}
+              className={[
+                "px-3 py-1.5 font-medium transition",
+                active
+                  ? "bg-slate-900 text-slate-50"
+                  : "text-slate-700 hover:bg-slate-100",
+              ].join(" ")}
+            >
+              Jaga {shift.toLowerCase()}
+            </button>
+          );
+        })}
       </div>
-    </section>
+
+      {/* Tanggal monitoring */}
+      <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+        <Calendar className="h-4 w-4 text-slate-500" />
+        <div className="flex flex-col">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            Tanggal monitoring
+          </span>
+          <input
+            type="date"
+            value={tanggal ?? ""}
+            onChange={(e) => onChangeDate(e.target.value)}
+            className="mt-0.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          />
+        </div>
+      </label>
+    </div>
   );
 };
 
