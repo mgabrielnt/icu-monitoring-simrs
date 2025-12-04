@@ -1,5 +1,3 @@
-// types/patient.ts
-
 export interface Patient {
   id: number;
   noRM: string;
