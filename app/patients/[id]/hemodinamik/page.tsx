@@ -3,57 +3,43 @@
 import React, { useEffect, useState } from "react";
 import {
   Activity,
-  Brain,
   HeartPulse,
-  Wind,
-  Thermometer,
   User,
   CalendarDays,
   Clock,
+  Plus,
+  X,
 } from "lucide-react";
-import { postJson } from "@/lib/api-client";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 export interface HemodinamikProps {
   noRm?: string;
-  tanggal?: string; // yyyy-mm-dd
+  tanggal?: string;
   hariPerawatanKe?: number;
   onSaved?: () => void;
 }
 
 interface HemodinamikEntry {
   id: string;
-  jam: string; // HH:MM
-  // Hemodinamik utama
+  jam: string;
+  sistol: number;
+  diastol: number;
   hr: number;
   map: number;
   temp: number;
   kesadaran: string;
   iramaEkg: string;
-  skorNyeri?: string;
-  skorSedasi?: string;
-  cvpIabp?: string;
-  papLap?: string;
-  sao2?: string;
-  tprIabp?: string;
-
-  // Respirasi
-  tipeVentilasi?: string;
-  fio2?: string;
-  rr?: string;
-  vte?: string;
-  pipPlatau?: string;
-  peepCpap?: string;
-  minuteVolume?: string;
-
-  // Neuro
-  mata?: string;
-  pupil?: string;
-  reaksiCahaya?: string;
-  tangan?: string;
-  kaki?: string;
-  gcsE?: string;
-  gcsM?: string;
-  gcsV?: string;
+  skorNyeri: string;
+  cvp?: string;
 }
 
 const createId = () => Math.random().toString(36).slice(2);
@@ -71,7 +57,7 @@ const opsiKesadaran = [
   "Somnolen",
   "Sopor",
   "Koma",
-  "Gelisan",
+  "Gelisah",
   "Delirium",
 ];
 
@@ -86,19 +72,6 @@ const opsiIramaEkg = [
   "Lainnya",
 ];
 
-const opsiSkorSedasi = ["0", "-1", "-2", "-3", "-4", "-5"];
-
-const opsiTipeVentilasi = [
-  "Spontan",
-  "NIV",
-  "CPAP",
-  "SIMV",
-  "ACV",
-  "PSV",
-  "HFNC",
-  "Lainnya",
-];
-
 const Hemodinamik: React.FC<HemodinamikProps> = ({
   noRm,
   tanggal,
@@ -107,6 +80,7 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
 }) => {
   const [systemTime, setSystemTime] = useState<string>(formatTime(new Date()));
   const [entries, setEntries] = useState<HemodinamikEntry[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -116,35 +90,15 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
   }, []);
 
   const [form, setForm] = useState({
-    // Hemodinamik
+    sistol: "",
+    diastol: "",
     hr: "",
     map: "",
     temp: "",
     kesadaran: "",
     iramaEkg: "",
     skorNyeri: "",
-    skorSedasi: "",
-    cvpIabp: "",
-    papLap: "",
-    sao2: "",
-    tprIabp: "",
-    // Respirasi
-    tipeVentilasi: "",
-    fio2: "",
-    rr: "",
-    vte: "",
-    pipPlatau: "",
-    peepCpap: "",
-    minuteVolume: "",
-    // Neuro
-    mata: "",
-    pupil: "",
-    reaksiCahaya: "",
-    tangan: "",
-    kaki: "",
-    gcsE: "",
-    gcsM: "",
-    gcsV: "",
+    cvp: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,17 +116,20 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
     return n >= min && n <= max;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setSubmitError(null);
     setSubmitSuccess(false);
 
     if (
-      !validateRange(form.hr, 0, 250) ||
-      !validateRange(form.map, 0, 250) ||
-      !validateRange(form.temp, 0, 250)
+      !validateRange(form.sistol, 30, 250) ||
+      !validateRange(form.diastol, 30, 250) ||
+      !validateRange(form.hr, 30, 250) ||
+      !validateRange(form.map, 30, 250) ||
+      !validateRange(form.temp, 30, 50)
     ) {
-      setSubmitError("HR, MAP, dan Temp harus antara 0–250.");
+      setSubmitError(
+        "Sistol, Diastol, HR, MAP (30-250) dan Temp (30-50) harus dalam rentang yang valid."
+      );
       return;
     }
 
@@ -185,34 +142,15 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
       const entry: HemodinamikEntry = {
         id: createId(),
         jam,
+        sistol: Number(form.sistol),
+        diastol: Number(form.diastol),
         hr: Number(form.hr),
         map: Number(form.map),
         temp: Number(form.temp),
         kesadaran: form.kesadaran,
         iramaEkg: form.iramaEkg,
-        skorNyeri: form.skorNyeri || undefined,
-        skorSedasi: form.skorSedasi || undefined,
-        cvpIabp: form.cvpIabp || undefined,
-        papLap: form.papLap || undefined,
-        sao2: form.sao2 || undefined,
-        tprIabp: form.tprIabp || undefined,
-
-        tipeVentilasi: form.tipeVentilasi || undefined,
-        fio2: form.fio2 || undefined,
-        rr: form.rr || undefined,
-        vte: form.vte || undefined,
-        pipPlatau: form.pipPlatau || undefined,
-        peepCpap: form.peepCpap || undefined,
-        minuteVolume: form.minuteVolume || undefined,
-
-        mata: form.mata || undefined,
-        pupil: form.pupil || undefined,
-        reaksiCahaya: form.reaksiCahaya || undefined,
-        tangan: form.tangan || undefined,
-        kaki: form.kaki || undefined,
-        gcsE: form.gcsE || undefined,
-        gcsM: form.gcsM || undefined,
-        gcsV: form.gcsV || undefined,
+        skorNyeri: form.skorNyeri,
+        cvp: form.cvp || undefined,
       };
 
       setEntries((prev) => [...prev, entry]);
@@ -226,46 +164,38 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
         measurement: entry,
       };
 
-      // Kirim ke backend (boleh diabaikan dulu sampai backend jadi)
+      // Kirim ke backend
       try {
-        await postJson<typeof payload, { ok?: boolean; message?: string }>(
-          "/api/monitoring/hemodinamik",
-          payload
-        );
+        const response = await fetch("/api/monitoring/hemodinamik", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          console.error("POST /api/monitoring/hemodinamik gagal");
+        }
       } catch (err) {
         console.error("POST /api/monitoring/hemodinamik gagal:", err);
       }
 
       setForm({
+        sistol: "",
+        diastol: "",
         hr: "",
         map: "",
         temp: "",
         kesadaran: "",
         iramaEkg: "",
         skorNyeri: "",
-        skorSedasi: "",
-        cvpIabp: "",
-        papLap: "",
-        sao2: "",
-        tprIabp: "",
-        tipeVentilasi: "",
-        fio2: "",
-        rr: "",
-        vte: "",
-        pipPlatau: "",
-        peepCpap: "",
-        minuteVolume: "",
-        mata: "",
-        pupil: "",
-        reaksiCahaya: "",
-        tangan: "",
-        kaki: "",
-        gcsE: "",
-        gcsM: "",
-        gcsV: "",
+        cvp: "",
       });
 
       setSubmitSuccess(true);
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setSubmitSuccess(false);
+      }, 1500);
+
       if (onSaved) onSaved();
     } catch (err) {
       setSubmitError(
@@ -276,9 +206,19 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
     }
   };
 
+  // Prepare data untuk chart
+  const chartData = entries.map((e) => ({
+    jam: e.jam,
+    Sistol: e.sistol,
+    Diastol: e.diastol,
+    HR: e.hr,
+    MAP: e.map,
+    Temp: e.temp,
+  }));
+
   return (
     <div className="space-y-5">
-      {/* HEADER – sama tema RS PIM */}
+      {/* HEADER */}
       <section className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 shadow-lg">
         <div className="relative flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/20 blur-3xl" />
@@ -287,15 +227,14 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
           <div className="relative space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-700/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-100/90 ring-1 ring-emerald-500/40">
               <span className="h-[1px] w-6 bg-emerald-200/80" />
-              ICU • Page 3
+              ICU • HEMODINAMIK
             </div>
             <h2 className="flex items-center gap-2 text-lg font-semibold text-emerald-50 sm:text-xl">
               <Activity className="h-5 w-5 text-emerald-200" />
-              Hemodinamik, Respirasi &amp; Neuro 24 Jam
+              Monitoring Hemodinamik 24 Jam
             </h2>
             <p className="max-w-xl text-xs text-emerald-100/90">
-              Input lengkap hemodinamik, parameter respirasi, dan status
-              neurologis per jam. Jam pengukuran diambil otomatis dari sistem.
+              Input data vital sign dan monitoring hemodinamik per jam dengan grafik real-time.
             </p>
           </div>
 
@@ -314,9 +253,7 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
                 <User className="h-3 w-3 text-emerald-200" />
                 <span>
                   No. RM:{" "}
-                  <span className="font-semibold text-emerald-50">
-                    {noRm}
-                  </span>
+                  <span className="font-semibold text-emerald-50">{noRm}</span>
                 </span>
               </div>
             )}
@@ -343,491 +280,152 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
         </div>
       </section>
 
-      {/* FORM UTAMA – mirip isi kertas 06/10 */}
-      <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-sm sm:p-5">
-        {/* Jam otomatis */}
-        <div className="mb-4 flex flex-col gap-2 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* GRAFIK HEMODINAMIK */}
+      <section className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
+            <Activity className="h-4 w-4 text-emerald-700" />
+          </div>
           <div>
-            <p className="text-[11px] font-medium text-emerald-900">
-              Jam Input (otomatis)
-            </p>
-            <p className="text-[11px] text-emerald-700">
-              Sistem menggunakan jam saat ini (24 jam). Jam{" "}
-              <span className="font-semibold">tidak bisa diedit</span> agar
-              dokumentasi sesuai waktu real.
+            <h3 className="text-sm font-semibold text-slate-900">
+              Grafik Hemodinamik
+            </h3>
+            <p className="text-[11px] text-slate-600">
+              Visualisasi data Temp, MAP, HR, Sistol, Diastol per jam
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-900 px-3 py-1 text-[11px] font-mono font-semibold text-emerald-50 shadow-sm">
-            <Clock className="h-3 w-3" />
-            {systemTime}
-          </span>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* HEMODINAMIK */}
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
-                <HeartPulse className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Hemodinamik
-                </h3>
-                <p className="text-[11px] text-slate-600">
-                  HR, MAP, temperatur, kesadaran, irama EKG, skor nyeri, sedasi,
-                  dan parameter invasif lain.
+        {entries.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis
+                dataKey="jam"
+                tick={{ fontSize: 11 }}
+                stroke="#64748b"
+              />
+              <YAxis
+                domain={[0, 250]}
+                tick={{ fontSize: 11 }}
+                stroke="#64748b"
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: "11px" }}
+                iconType="line"
+              />
+              <Line
+                type="monotone"
+                dataKey="Temp"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                name="Temp (°C)"
+                dot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="MAP"
+                stroke="#10b981"
+                strokeWidth={2}
+                name="MAP (mmHg)"
+                dot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="HR"
+                stroke="#ef4444"
+                strokeWidth={2}
+                name="HR (x/menit)"
+                dot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Sistol"
+                stroke="#000000"
+                strokeWidth={2}
+                name="Sistol (mmHg)"
+                dot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Diastol"
+                stroke="#1f2937"
+                strokeWidth={2}
+                name="Diastol (mmHg)"
+                dot={{ r: 3 }}
+                strokeDasharray="5 5"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="relative h-[350px] rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  tick={{ fontSize: 11 }}
+                  stroke="#64748b"
+                  label={{ value: "Jam", position: "insideBottom", offset: -5, fontSize: 11 }}
+                />
+                <YAxis
+                  domain={[0, 250]}
+                  tick={{ fontSize: 11 }}
+                  stroke="#64748b"
+                  label={{ value: "Nilai", angle: -90, position: "insideLeft", fontSize: 11 }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: "11px" }}
+                  iconType="line"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <Activity className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+                <p className="text-sm font-medium text-slate-500">
+                  Grafik Belum Tersedia
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Mulai input data untuk melihat visualisasi grafik
                 </p>
               </div>
             </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  HR (x/menit) *
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={250}
-                  required
-                  value={form.hr}
-                  onChange={(e) => handleChange("hr", e.target.value)}
-                  placeholder="0 – 250"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  MAP (mmHg) *
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={250}
-                  required
-                  value={form.map}
-                  onChange={(e) => handleChange("map", e.target.value)}
-                  placeholder="0 – 250"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Temp (°C) *
-                </label>
-                <div className="flex items-center gap-2">
-                  <Thermometer className="h-4 w-4 text-slate-500" />
-                  <input
-                    type="number"
-                    min={0}
-                    max={250}
-                    required
-                    value={form.temp}
-                    onChange={(e) => handleChange("temp", e.target.value)}
-                    placeholder="0 – 250"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Kesadaran
-                </label>
-                <select
-                  value={form.kesadaran}
-                  onChange={(e) => handleChange("kesadaran", e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="">Pilih tingkat kesadaran</option>
-                  {opsiKesadaran.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Irama EKG
-                </label>
-                <select
-                  value={form.iramaEkg}
-                  onChange={(e) => handleChange("iramaEkg", e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="">Pilih irama</option>
-                  {opsiIramaEkg.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                  <option value="Lainnya (tulis di bawah)">
-                    Lainnya (tulis di bawah)
-                  </option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Skor Nyeri (0–10)
-                </label>
-                <input
-                  type="text"
-                  value={form.skorNyeri}
-                  onChange={(e) => handleChange("skorNyeri", e.target.value)}
-                  placeholder="contoh: 3/10"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-4">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Skor Sedasi
-                </label>
-                <select
-                  value={form.skorSedasi}
-                  onChange={(e) => handleChange("skorSedasi", e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="">Pilih</option>
-                  {opsiSkorSedasi.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  CVP / IABP
-                </label>
-                <input
-                  type="text"
-                  value={form.cvpIabp}
-                  onChange={(e) => handleChange("cvpIabp", e.target.value)}
-                  placeholder="misal: 10 cmH₂O / ON"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  PAP / LAP
-                </label>
-                <input
-                  type="text"
-                  value={form.papLap}
-                  onChange={(e) => handleChange("papLap", e.target.value)}
-                  placeholder="opsional"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  SaO₂ / SpO₂ (%)
-                </label>
-                <input
-                  type="text"
-                  value={form.sao2}
-                  onChange={(e) => handleChange("sao2", e.target.value)}
-                  placeholder="contoh: 98%"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
           </div>
-
-          {/* RESPIRASI */}
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-50 ring-1 ring-sky-100">
-                <Wind className="h-4 w-4 text-sky-700" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Respirasi
-                </h3>
-                <p className="text-[11px] text-slate-600">
-                  Tipe ventilasi, FiO₂, RR, VtE, PIP, PEEP/CPAP, dan minute
-                  volume.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Tipe Ventilasi
-                </label>
-                <select
-                  value={form.tipeVentilasi}
-                  onChange={(e) =>
-                    handleChange("tipeVentilasi", e.target.value)
-                  }
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="">Pilih tipe</option>
-                  {opsiTipeVentilasi.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  FiO₂ (%)
-                </label>
-                <input
-                  type="text"
-                  value={form.fio2}
-                  onChange={(e) => handleChange("fio2", e.target.value)}
-                  placeholder="contoh: 40%"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  RR (x/menit)
-                </label>
-                <input
-                  type="text"
-                  value={form.rr}
-                  onChange={(e) => handleChange("rr", e.target.value)}
-                  placeholder="misal: 18"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-4">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  VtE (mL)
-                </label>
-                <input
-                  type="text"
-                  value={form.vte}
-                  onChange={(e) => handleChange("vte", e.target.value)}
-                  placeholder="misal: 450"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  PIP / P-Platau (cmH₂O)
-                </label>
-                <input
-                  type="text"
-                  value={form.pipPlatau}
-                  onChange={(e) => handleChange("pipPlatau", e.target.value)}
-                  placeholder="opsional"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  PEEP / CPAP (cmH₂O)
-                </label>
-                <input
-                  type="text"
-                  value={form.peepCpap}
-                  onChange={(e) => handleChange("peepCpap", e.target.value)}
-                  placeholder="misal: 5"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Minute Volume (L/menit)
-                </label>
-                <input
-                  type="text"
-                  value={form.minuteVolume}
-                  onChange={(e) =>
-                    handleChange("minuteVolume", e.target.value)
-                  }
-                  placeholder="misal: 7,5"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* NEURO */}
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
-                <Brain className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Neuro (GCS &amp; Motorik)
-                </h3>
-                <p className="text-[11px] text-slate-600">
-                  Pupil, reaksi cahaya, kekuatan tangan &amp; kaki, serta GCS
-                  (E, M, V).
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Mata (R/L)
-                </label>
-                <input
-                  type="text"
-                  value={form.mata}
-                  onChange={(e) => handleChange("mata", e.target.value)}
-                  placeholder="contoh: R/L terbuka"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Ukuran Pupil
-                </label>
-                <input
-                  type="text"
-                  value={form.pupil}
-                  onChange={(e) => handleChange("pupil", e.target.value)}
-                  placeholder="contoh: isokor / anisokor"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Reaksi Cahaya
-                </label>
-                <input
-                  type="text"
-                  value={form.reaksiCahaya}
-                  onChange={(e) =>
-                    handleChange("reaksiCahaya", e.target.value)
-                  }
-                  placeholder="contoh: +/+ , -/-"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Tangan (R/L)
-                </label>
-                <input
-                  type="text"
-                  value={form.tangan}
-                  onChange={(e) => handleChange("tangan", e.target.value)}
-                  placeholder="contoh: 5/5, hemiparese"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  Kaki (R/L)
-                </label>
-                <input
-                  type="text"
-                  value={form.kaki}
-                  onChange={(e) => handleChange("kaki", e.target.value)}
-                  placeholder="contoh: 4/5"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[11px] font-medium text-slate-700">
-                  GCS (E / M / V)
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <input
-                    type="text"
-                    value={form.gcsE}
-                    onChange={(e) => handleChange("gcsE", e.target.value)}
-                    placeholder="E"
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <input
-                    type="text"
-                    value={form.gcsM}
-                    onChange={(e) => handleChange("gcsM", e.target.value)}
-                    placeholder="M"
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <input
-                    type="text"
-                    value={form.gcsV}
-                    onChange={(e) => handleChange("gcsV", e.target.value)}
-                    placeholder="V"
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* FOOTER / SUBMIT */}
-          <div className="mt-2 flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="flex items-center gap-2 text-[11px] text-slate-500">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500 ring-1 ring-slate-200">
-                <Activity className="h-3 w-3" />
-              </span>
-              Setiap submit akan mencatat{" "}
-              <span className="font-semibold">1 baris monitoring</span> untuk
-              jam tersebut, mirip 1 kolom di grafik kertas 24 jam.
-            </p>
-            <div className="flex items-center gap-2">
-              {submitError && (
-                <span className="text-[11px] text-rose-600">{submitError}</span>
-              )}
-              {submitSuccess && (
-                <span className="text-[11px] text-emerald-700">
-                  Data hemodinamik tersimpan. ✅
-                </span>
-              )}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-full bg-emerald-700 px-5 py-1.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-70"
-              >
-                {isSubmitting ? "Menyimpan..." : "Simpan Input Jam Ini"}
-              </button>
-            </div>
-          </div>
-        </form>
+        )}
       </section>
 
-      {/* RIWAYAT INPUT (24 jam terakhir) */}
+      {/* TABEL DATA */}
       <section className="rounded-2xl border border-slate-200 bg-white/95 shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
-              <Activity className="h-4 w-4 text-emerald-700" />
+              <HeartPulse className="h-4 w-4 text-emerald-700" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
-                Rekap Input Hemodinamik 24 Jam
+                Data Hemodinamik 24 Jam
               </h3>
               <p className="text-[11px] text-slate-600">
-                Tampilan ringkas tiap jam. Detail lengkap tetap terkirim ke
-                backend.
+                Rekap monitoring per jam
               </p>
             </div>
           </div>
-          {entries.length > 0 && (
-            <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] text-slate-500">
-              Total pengukuran:{" "}
-              <span className="font-semibold text-slate-800">
-                {entries.length}
-              </span>
-            </span>
-          )}
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-2 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 transition"
+          >
+            <Plus className="h-4 w-4" />
+            Input Data
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -836,6 +434,12 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
               <tr className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
                 <th className="border-b border-slate-200 px-3 py-2 text-center">
                   Jam
+                </th>
+                <th className="border-b border-slate-200 px-3 py-2 text-center">
+                  Sistol
+                </th>
+                <th className="border-b border-slate-200 px-3 py-2 text-center">
+                  Diastol
                 </th>
                 <th className="border-b border-slate-200 px-3 py-2 text-center">
                   HR
@@ -853,10 +457,10 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
                   Irama EKG
                 </th>
                 <th className="border-b border-slate-200 px-3 py-2 text-center">
-                  FiO₂ / RR
+                  Skor Nyeri
                 </th>
                 <th className="border-b border-slate-200 px-3 py-2 text-center">
-                  SaO₂ / GCS
+                  CVP
                 </th>
               </tr>
             </thead>
@@ -872,28 +476,32 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
                       {e.jam}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
+                  <td className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
+                    {e.sistol}
+                  </td>
+                  <td className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
+                    {e.diastol}
+                  </td>
+                  <td className="px-3 py-2 text-center text-xs font-semibold text-red-600">
                     {e.hr}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
+                  <td className="px-3 py-2 text-center text-xs font-semibold text-green-600">
                     {e.map}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
+                  <td className="px-3 py-2 text-center text-xs font-semibold text-blue-600">
                     {e.temp}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
+                  <td className="px-3 py-2 text-center text-xs text-slate-700">
                     {e.kesadaran || "-"}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
+                  <td className="px-3 py-2 text-center text-xs text-slate-700">
                     {e.iramaEkg || "-"}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
-                    {(e.fio2 || "-") + " / " + (e.rr || "-")}
+                  <td className="px-3 py-2 text-center text-xs text-slate-700">
+                    {e.skorNyeri || "-"}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-slate-800">
-                    {(e.sao2 || "-") +
-                      " / " +
-                      [e.gcsE, e.gcsM, e.gcsV].filter(Boolean).join("-")}
+                  <td className="px-3 py-2 text-center text-xs text-slate-700">
+                    {e.cvp || "-"}
                   </td>
                 </tr>
               ))}
@@ -901,11 +509,10 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
               {entries.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
-                    className="px-4 py-5 text-center text-xs text-slate-400"
+                    colSpan={10}
+                    className="px-4 py-8 text-center text-xs text-slate-400"
                   >
-                    Belum ada data. Isi form di atas untuk mulai mencatat
-                    monitoring 24 jam.
+                    Belum ada data. Klik tombol "Input Data" untuk mulai mencatat monitoring.
                   </td>
                 </tr>
               )}
@@ -913,6 +520,225 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
           </table>
         </div>
       </section>
+
+      {/* MODAL INPUT */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
+                  <Plus className="h-4 w-4 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Input Data Hemodinamik
+                  </h3>
+                  <p className="text-[11px] text-slate-600">
+                    Jam: {systemTime} (otomatis)
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full p-1 hover:bg-slate-100 transition"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* Tensi Pasien */}
+              <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                <h4 className="text-xs font-semibold text-slate-700">
+                  1. Tensi Pasien (mmHg)
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-700">
+                      Sistol *
+                    </label>
+                    <input
+                      type="number"
+                      min={30}
+                      max={250}
+                      required
+                      value={form.sistol}
+                      onChange={(e) => handleChange("sistol", e.target.value)}
+                      placeholder="30 – 250"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-700">
+                      Diastol *
+                    </label>
+                    <input
+                      type="number"
+                      min={30}
+                      max={250}
+                      required
+                      value={form.diastol}
+                      onChange={(e) => handleChange("diastol", e.target.value)}
+                      placeholder="30 – 250"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* HR, MAP, Temp */}
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    2. HR (x/menit) *
+                  </label>
+                  <input
+                    type="number"
+                    min={30}
+                    max={250}
+                    required
+                    value={form.hr}
+                    onChange={(e) => handleChange("hr", e.target.value)}
+                    placeholder="30 – 250"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    3. MAP (mmHg) *
+                  </label>
+                  <input
+                    type="number"
+                    min={30}
+                    max={250}
+                    required
+                    value={form.map}
+                    onChange={(e) => handleChange("map", e.target.value)}
+                    placeholder="30 – 250"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    4. Temp (°C) *
+                  </label>
+                  <input
+                    type="number"
+                    min={30}
+                    max={50}
+                    step="0.1"
+                    required
+                    value={form.temp}
+                    onChange={(e) => handleChange("temp", e.target.value)}
+                    placeholder="30 – 50"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Kesadaran, Irama EKG */}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    5. Kesadaran
+                  </label>
+                  <select
+                    value={form.kesadaran}
+                    onChange={(e) => handleChange("kesadaran", e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="">Pilih kesadaran</option>
+                    {opsiKesadaran.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    6. Irama EKG
+                  </label>
+                  <select
+                    value={form.iramaEkg}
+                    onChange={(e) => handleChange("iramaEkg", e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="">Pilih irama</option>
+                    {opsiIramaEkg.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Skor Nyeri, CVP */}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    7. Skor Nyeri
+                  </label>
+                  <input
+                    type="text"
+                    value={form.skorNyeri}
+                    onChange={(e) => handleChange("skorNyeri", e.target.value)}
+                    placeholder="contoh: 3/10"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-700">
+                    8. CVP (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={form.cvp}
+                    onChange={(e) => handleChange("cvp", e.target.value)}
+                    placeholder="contoh: 10 cmH₂O"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Error & Success Messages */}
+              {submitError && (
+                <div className="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-[11px] text-rose-700">
+                  {submitError}
+                </div>
+              )}
+              {submitSuccess && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] text-emerald-700">
+                  ✅ Data berhasil disimpan!
+                </div>
+              )}
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2 border-t border-slate-200 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="rounded-full bg-emerald-700 px-5 py-2 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-70 transition"
+                >
+                  {isSubmitting ? "Menyimpan..." : "Simpan Data"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
