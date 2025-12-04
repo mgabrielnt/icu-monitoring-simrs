@@ -1,33 +1,18 @@
-// app/patients/[id]/alatinvansive/page.tsx
+// D:\projek-medis\icu-monitoring-simrs\app\patients\[id]\alatinvansive\page.tsx
 
-import AlatInvasifClient from "./components/AlatInvasifClient";
-import { DUMMY_MONITORING_PAGE2 } from "@/mocks/monitoringDummy";
+import type { Metadata } from "next";
+import AlatInvansivePageClient from "./components/AlatInvansivePageClient";
 
 interface PageProps {
-  params: { id: string };
-  searchParams?: {
-    tanggal?: string;
-    hariPerawatanKe?: string;
+  params: {
+    id: string;
   };
 }
 
-const AlatInvasifPage = ({ params, searchParams }: PageProps) => {
-  const noRm = params.id;
-
-  // Untuk sementara pakai default kalau query tidak ada
-  const tanggal = searchParams?.tanggal ?? "2024-12-01";
-  const hariPerawatanKe = searchParams?.hariPerawatanKe
-    ? Number(searchParams.hariPerawatanKe)
-    : 1;
-
-  return (
-    <AlatInvasifClient
-      noRm={noRm}
-      tanggal={tanggal}
-      hariPerawatanKe={hariPerawatanKe}
-      initialData={DUMMY_MONITORING_PAGE2} // ⬅️ ini perbaikannya
-    />
-  );
+export const metadata: Metadata = {
+  title: "Pemasangan Alat Invasif - ICU SIMRS",
 };
 
-export default AlatInvasifPage;
+export default function AlatInvansivePage({ params }: PageProps) {
+  return <AlatInvansivePageClient patientId={params.id} />;
+}
