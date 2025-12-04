@@ -8,7 +8,7 @@ import {
   User,
   CalendarDays,
 } from "lucide-react";
-import { postJson } from "@/lib/api";
+import { postJson } from "@/lib/api-client";
 
 export interface BalanceCairanProps {
   noRm?: string;

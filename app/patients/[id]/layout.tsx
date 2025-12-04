@@ -1,3 +1,4 @@
+// app/patients/[id]/layout.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,9 +18,7 @@ export default function PatientLayout({
   
   const [activeMenu, setActiveMenu] = useState('datadiri');
 
-  // Update active menu berdasarkan pathname
   useEffect(() => {
-    // Cek apakah di root page atau sub page
     if (pathname === `/patients/${patientId}`) {
       setActiveMenu('datadiri');
     } else {
@@ -39,14 +38,13 @@ export default function PatientLayout({
   const handleMenuChange = (menu: string) => {
     setActiveMenu(menu);
     
-    // Routing berdasarkan menu
     const routes: Record<string, string> = {
-      'datadiri': `/patients/${patientId}`,
-      'alatinvasif': `/patients/${patientId}/alatinvansive`,
-      'hemodinamik': `/patients/${patientId}/hemodinamik`,
-      'instruksiobat': `/patients/${patientId}/instruksiobat`,
-      'perencanaanperawat': `/patients/${patientId}/perencanaanperawat`,
-      'perkembanganpasien': `/patients/${patientId}/perkembanganpasien`,
+      datadiri: `/patients/${patientId}`,
+      alatinvasif: `/patients/${patientId}/alatinvansive`,
+      hemodinamik: `/patients/${patientId}/hemodinamik`,
+      instruksiobat: `/patients/${patientId}/instruksiobat`,
+      perencanaanperawat: `/patients/${patientId}/perencanaanperawat`,
+      perkembanganpasien: `/patients/${patientId}/perkembanganpasien`,
     };
     
     if (routes[menu]) {

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { FileText, Plus, CheckCircle, Clock, User } from "lucide-react";
-import { postJson } from "@/lib/api";
+import { postJson } from "@/lib/api-client";
 
 interface ImplementasiRow {
   no: number;

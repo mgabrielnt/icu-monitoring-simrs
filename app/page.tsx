@@ -45,9 +45,13 @@ export default function DashboardPage() {
     return true;
   });
 
+// app/page.tsx (DashboardPage)
+
   const handleViewDetail = (patientId: number) => {
-    router.push(`/patient/${patientId}`);
+    // PLURAL "patients", sesuai folder app/patients/[id]
+    router.push(`/patients/${patientId}`);
   };
+
 
   const handleLogout = () => {
     router.push('/');

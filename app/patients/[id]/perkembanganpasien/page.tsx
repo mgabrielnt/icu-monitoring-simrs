@@ -1,11 +1,11 @@
-import React from 'react'
+// app/patients/[id]/perkembanganpasien/page.tsx
+import PerkembanganPasienClient from "./components/PerkembanganPasienClient";
 
-const page = () => {
-  return (
-    <div>
-      <h1>cihuy</h1>
-    </div>
-  )
+interface PageProps {
+  params: { id: string };
 }
 
-export default page
+export default function PerkembanganPasienPage({ params }: PageProps) {
+  const { id } = params;
+  return <PerkembanganPasienClient patientId={id} />;
+}

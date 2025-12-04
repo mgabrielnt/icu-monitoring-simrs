@@ -1,11 +1,18 @@
-import React from 'react'
+// D:\projek-medis\icu-monitoring-simrs\app\patients\[id]\alatinvansive\page.tsx
 
-const page = () => {
-  return (
-    <div>
-      <h1>cihuy</h1>
-    </div>
-  )
+import type { Metadata } from "next";
+import AlatInvansivePageClient from "./components/AlatInvansivePageClient";
+
+interface PageProps {
+  params: {
+    id: string;
+  };
 }
 
-export default page
+export const metadata: Metadata = {
+  title: "Pemasangan Alat Invasif - ICU SIMRS",
+};
+
+export default function AlatInvansivePage({ params }: PageProps) {
+  return <AlatInvansivePageClient patientId={params.id} />;
+}
