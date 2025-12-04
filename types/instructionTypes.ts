@@ -22,3 +22,10 @@ export interface InstruksiObatPayload {
   };
   polaVentilasi: string;
 }
+
+export interface InstruksiObatHeaderProps {
+  hariPerawatan: number;
+  instruksi: InstruksiObatItem[];
+  noRm?: string;
+  tanggal?: string;
+}
