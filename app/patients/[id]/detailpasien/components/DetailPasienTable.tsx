@@ -1,6 +1,6 @@
 import React from "react";
 import { Clock, Activity } from "lucide-react";
-import type { DetailEntry } from "../../types/detailPatient";
+import type { DetailEntry } from "../../../../../types/detailPatient";
 
 interface Props {
   entries: DetailEntry[];

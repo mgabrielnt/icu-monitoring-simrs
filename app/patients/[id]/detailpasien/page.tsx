@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import DetailPasienHeader from "@/components/DetailPasien/DetailPasienHeader";
-import DetailPasienTable from "@/components/DetailPasien/DetailPasienTable";
-import DetailPasienModal from "@/components/DetailPasien/DetailPasienModal";
+import DetailPasienHeader from "./components/DetailPasienHeader";
+import DetailPasienTable from "./components/DetailPasienTable";
+import DetailPasienModal from   "./components/DetailPasienModal";
 import type { DetailEntry, DetailPasienProps } from "@/types/detailPatient";
 import { Activity, Clock, Plus } from "lucide-react";
 

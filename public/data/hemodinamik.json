@@ -1,0 +1,128 @@
+[
+  {
+    "id": "hemo_001",
+    "jam": "08:00",
+    "sistol": 120,
+    "diastol": 80,
+    "hr": 78,
+    "map": 93,
+    "temp": 36.5,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "2/10",
+    "cvp": "8 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_002",
+    "jam": "09:00",
+    "sistol": 125,
+    "diastol": 82,
+    "hr": 80,
+    "map": 96,
+    "temp": 36.7,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "2/10",
+    "cvp": "9 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_003",
+    "jam": "10:00",
+    "sistol": 118,
+    "diastol": 78,
+    "hr": 75,
+    "map": 91,
+    "temp": 36.8,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "1/10",
+    "cvp": "7 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_004",
+    "jam": "11:00",
+    "sistol": 130,
+    "diastol": 85,
+    "hr": 82,
+    "map": 100,
+    "temp": 37.0,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "3/10",
+    "cvp": "10 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_005",
+    "jam": "12:00",
+    "sistol": 122,
+    "diastol": 80,
+    "hr": 77,
+    "map": 94,
+    "temp": 36.9,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "2/10",
+    "cvp": "8 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_006",
+    "jam": "13:00",
+    "sistol": 128,
+    "diastol": 83,
+    "hr": 85,
+    "map": 98,
+    "temp": 37.1,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "2/10",
+    "cvp": "9 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  },
+  {
+    "id": "hemo_007",
+    "jam": "14:00",
+    "sistol": 115,
+    "diastol": 75,
+    "hr": 72,
+    "map": 88,
+    "temp": 36.6,
+    "kesadaran": "Compos mentis",
+    "iramaEkg": "Sinus rhythm",
+    "skorNyeri": "1/10",
+    "cvp": "7 cmH₂O",
+    "meta": {
+      "noRm": "RM001234",
+      "tanggal": "2025-12-05",
+      "hariPerawatanKe": 1
+    }
+  }
+]
