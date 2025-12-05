@@ -32,7 +32,7 @@ export default function Page() {
   return (
     <div className="p-6 space-y-6">
 
-      <InstruksiObatHeader hariPerawatan={hariPerawatan} instruksi={instruksi} />
+      <InstruksiObatHeader />
 
       <div className="bg-white p-5 rounded-xl shadow">
         <label className="font-semibold">Hari Perawatan Ke:</label>

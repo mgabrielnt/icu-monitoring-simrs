@@ -8,6 +8,7 @@ const menuList = [
   { key: "datadiri", label: "Data Diri Pasien", icon: User, color: "from-blue-500 to-blue-600" },
   { key: "alatinvasif", label: "Alat Invasif", icon: Shield, color: "from-emerald-500 to-emerald-600" },
   { key: "hemodinamik", label: "Hemodinamik", icon: Activity, color: "from-purple-500 to-purple-600" },
+  { key: "detailpasien", label: "Detail Pasien", icon: Activity, color: "from-purple-500 to-purple-600" },
   { key: "instruksiobat", label: "Instruksi Obat", icon: Pill, color: "from-pink-500 to-pink-600" },
   { key: "perencanaanperawat", label: "Perencanaan Perawat", icon: FileText, color: "from-amber-500 to-amber-600" },
   { key: "perkembanganpasien", label: "Perkembangan Pasien", icon: TrendingUp, color: "from-cyan-500 to-cyan-600" },

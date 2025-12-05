@@ -18,7 +18,7 @@ export default function PerencanaanPerawatPageClient({ patientId }: Props) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* HEADER GRADIENT */}
-      <PerencanaanPerawatHeader patientId={patientId} />
+      <PerencanaanPerawatHeader/>
 
       {/* FORM CARD */}
       <section className="rounded-2xl border border-emerald-100 bg-white/95 shadow-sm">

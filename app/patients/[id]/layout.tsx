@@ -42,6 +42,7 @@ export default function PatientLayout({
       datadiri: `/patients/${patientId}`,
       alatinvasif: `/patients/${patientId}/alatinvansive`,
       hemodinamik: `/patients/${patientId}/hemodinamik`,
+      detailpasien: `/patients/${patientId}/detailpasien`,
       instruksiobat: `/patients/${patientId}/instruksiobat`,
       perencanaanperawat: `/patients/${patientId}/perencanaanperawat`,
       perkembanganpasien: `/patients/${patientId}/perkembanganpasien`,

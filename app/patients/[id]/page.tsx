@@ -1,4 +1,3 @@
-// app/patients/[id]/page.tsx
 "use client";
 
 import React from "react";
@@ -8,7 +7,7 @@ import Container from "@/components/Container";
 import { usePatientDetail } from "@/hooks/usePatientDetail";
 import { createPatientDetailHandlers } from "@/handlers/patientHandlers";
 import { formatDateIndonesia } from "@/utils/dashboardUtils";
-import PatientHeader from "./components/PatientHeader";
+import PatientHeaderBasic from "./components/PatientHeader";
 import PatientInfoCard from "./components/PatientInfoCard";
 import PatientDiagnosisCard from "./components/PatientDiagnosisCard";
 
@@ -55,7 +54,7 @@ export default function PatientDetailPage() {
     <Container className="py-8">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Header pasien */}
-        <PatientHeader patient={patient} />
+        <PatientHeaderBasic patient={patient} />
 
         {/* Grid info pasien */}
         <div className="p-6">

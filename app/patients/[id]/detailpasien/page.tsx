@@ -178,7 +178,7 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
 
   return (
     <div className="space-y-5">
-      <DetailPasienHeader systemTime={systemTime} noRm={noRm} tanggal={tanggal} hariPerawatanKe={hariPerawatanKe} />
+      <DetailPasienHeader />
 
       <section className="flex justify-end">
         <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 transition"><Plus className="h-4 w-4" /> Input Data Detail Pasien</button>

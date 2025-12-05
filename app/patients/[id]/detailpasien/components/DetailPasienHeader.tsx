@@ -1,10 +1,10 @@
-import { Patient } from "@/types/patient";
-import { HeaderPatients } from "@/components/HeaderPatients";
+"use client";
+import  HeaderPatients from "@/components/HeaderPatients";
 
-function DetailPasienHeader({ patient }: { patient: Patient }) {
+export default function DetailPasienHeader() {
   return (
     <HeaderPatients
-      patient={patient}
+
       content={{
         subtitle: "Data Pasien",
         title: "Detail Informasi Pasien",
