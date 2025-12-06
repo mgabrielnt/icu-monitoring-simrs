@@ -4,6 +4,7 @@ import HeaderPatients from "@/components/HeaderPatients";
 export default function AlatInvansiveHeroHeader() {
   return (
     <HeaderPatients
+      withContainer={false}  
       content={{
         subtitle: "Dokumentasi Keperawatan",
         title: "Alat Invasif & Balance Cair",

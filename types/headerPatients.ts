@@ -6,6 +6,8 @@ export interface Patient {
   jenisKelamin?: string;
 }
 
+
+
 export interface Badge {
   label: string;
   variant?: "primary" | "secondary" | "success" | "warning";
@@ -26,4 +28,5 @@ export interface HeaderPatientsProps {
   showBackButton?: boolean;
   backButtonHref?: string;
   onBackClick?: () => void;
+  withContainer?: boolean; 
 }

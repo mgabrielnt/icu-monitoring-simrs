@@ -1,10 +1,10 @@
-// app/patients/[id]/layout.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Navbar from '@/components/Navbar';
+import ContainerContent from '@/components/ContainerContent';
 
 export default function PatientLayout({
   children,
@@ -15,29 +15,36 @@ export default function PatientLayout({
   const params = useParams();
   const pathname = usePathname();
   const patientId = params.id as string;
-  
+
   const [activeMenu, setActiveMenu] = useState('datadiri');
 
+  // =============================
+  // Detect aktif menu otomatis
+  // =============================
   useEffect(() => {
     if (pathname === `/patients/${patientId}`) {
       setActiveMenu('datadiri');
     } else {
-      const currentPath = pathname.split('/').pop();
-      if (currentPath) {
-        setActiveMenu(currentPath);
-      }
+      const current = pathname.split('/').pop();
+      if (current) setActiveMenu(current);
     }
   }, [pathname, patientId]);
 
+  // =============================
+  // Logout
+  // =============================
   const handleLogout = () => {
     if (confirm('Yakin ingin logout?')) {
       router.push('/dashboard');
     }
   };
 
+  // =============================
+  // Handle Navbar Menu Click
+  // =============================
   const handleMenuChange = (menu: string) => {
     setActiveMenu(menu);
-    
+
     const routes: Record<string, string> = {
       datadiri: `/patients/${patientId}`,
       alatinvasif: `/patients/${patientId}/alatinvansive`,
@@ -47,17 +54,23 @@ export default function PatientLayout({
       perencanaanperawat: `/patients/${patientId}/perencanaanperawat`,
       perkembanganpasien: `/patients/${patientId}/perkembanganpasien`,
     };
-    
-    if (routes[menu]) {
-      router.push(routes[menu]);
-    }
+
+    if (routes[menu]) router.push(routes[menu]);
   };
 
+  // =============================
+  // Layout tampilan seragam
+  // =============================
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onLogout={handleLogout} />
       <Navbar active={activeMenu} onChange={handleMenuChange} />
-      <main>{children}</main>
+
+      <main className="p-6">
+        <ContainerContent className="space-y-6">
+          {children}
+        </ContainerContent>
+      </main>
     </div>
   );
 }
