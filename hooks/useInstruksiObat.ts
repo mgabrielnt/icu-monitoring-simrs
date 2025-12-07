@@ -1,49 +1,89 @@
-import { useState } from "react";
-import { InstruksiObatItem } from "@/types/instructionTypes";
+// hooks/useInstruksiObat.ts
+
+import { useState, useEffect, useCallback } from "react";
+import { SavedInstruksiObat, InstruksiObatFormData } from "@/types/instructionTypes";
+import { InstruksiObatService } from "@/services/instructionService";
 
 export function useInstruksiObat() {
-  const [hariPerawatan, setHariPerawatan] = useState<number>(1);
+  const [data, setData] = useState<SavedInstruksiObat[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [instruksi, setInstruksi] = useState<InstruksiObatItem[]>([
-    {
-      jam: "",
-      namaObat: "",
-      dosis: "",
-      caraPemberian: "",
-      tglMulai: "",
-      tglStop: "",
-      ketPEd: "",
-      namaDokter: "",
-      implementasi: "",
-    },
-  ]);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Check if backend is active first
+      await InstruksiObatService.checkBackend();
+      
+      // Fetch data from service (will auto use backend or dummy JSON)
+      const result = await InstruksiObatService.getAll();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      console.error('Error fetching instruksi obat:', err);
+      // Set empty array on error so UI doesn't break
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const [instruksiLain, setInstruksiLain] = useState("");
-  const [polaVentilasi, setPolaVentilasi] = useState("");
+  const createData = useCallback(async (formData: InstruksiObatFormData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const newData = await InstruksiObatService.create(formData);
+      setData(prev => [...prev, newData]);
+      return newData;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create data');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const [nutrisi, setNutrisi] = useState({
-    volume: 0,
-    kalori: 0,
-    protein: 0,
-    lipit: 0,
-  });
+  const updateData = useCallback(async (id: string, formData: InstruksiObatFormData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const updatedData = await InstruksiObatService.update(id, formData);
+      setData(prev => prev.map(item => item.id === id ? updatedData : item));
+      return updatedData;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update data');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  // 🔥 Tambahan: fungsi untuk memberi timestamp otomatis
-  const generateTimestampedInstruksi = () => {
-    return instruksi.map((item) => ({
-      ...item,
-      jam: new Date().toISOString(), // auto timestamp
-    }));
-  };
+  const deleteData = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await InstruksiObatService.delete(id);
+      setData(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete data');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return {
-    hariPerawatan, setHariPerawatan,
-    instruksi, setInstruksi,
-    instruksiLain, setInstruksiLain,
-    nutrisi, setNutrisi,
-    polaVentilasi, setPolaVentilasi,
-
-    // fungsi auto timestamp
-    generateTimestampedInstruksi,
+    data,
+    isLoading,
+    error,
+    refetch: fetchData,
+    create: createData,
+    update: updateData,
+    delete: deleteData
   };
 }

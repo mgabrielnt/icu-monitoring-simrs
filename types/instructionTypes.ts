@@ -1,31 +1,75 @@
+// types/instruksi-obat.types.ts
+
 export interface InstruksiObatItem {
   jam: string;
   namaObat: string;
-  dosis: string;
+  dosisObat: string;
   caraPemberian: string;
   tglMulai: string;
   tglStop: string;
-  ketPEd: string;
+  ketPED: string;
   namaDokter: string;
-  implementasi: string;
-}
-
-export interface InstruksiObatPayload {
-  hariPerawatan: number;
-  instruksi: InstruksiObatItem[];
-  instruksiLain: string;
-  nutrisi: {
-    volume: number;
-    kalori: number;
-    protein: number;
-    lipit: number;
+  implementasi: {
+    [key: string]: string;
   };
-  polaVentilasi: string;
 }
 
-export interface InstruksiObatHeaderProps {
+export interface InstruksiLainItem {
+  instruksi: string;
+  implementasi: {
+    [key: string]: string;
+  };
+}
+
+export type NutrisiJenis = 'Volume' | 'Kalori' | 'Protein' | 'Lipid';
+
+export interface NutrisiCaranItem {
+  jenis: NutrisiJenis;
+  parenteral: string;
+  enteral: string;
+  jam: string;
+}
+
+export interface SavedInstruksiObat {
+  id: string;
   hariPerawatan: number;
-  instruksi: InstruksiObatItem[];
-  noRm?: string;
-  tanggal?: string;
+  instruksiObat: InstruksiObatItem[];
+  instruksiLain: InstruksiLainItem[];
+  nutrisiCairan: NutrisiCaranItem[];
+  polaVentilasi: string;
+  verifikasiDPJP: string;
+  verifikasiDPJP2: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstruksiObatFormData {
+  hariPerawatan: number;
+  instruksiObat: InstruksiObatItem[];
+  instruksiLain: InstruksiLainItem[];
+  nutrisiCairan: NutrisiCaranItem[];
+  polaVentilasi: string;
+  verifikasiDPJP: string;
+  verifikasiDPJP2: string;
+}
+
+export interface InstruksiObatModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  hariPerawatan: number;
+  setHariPerawatan: (val: number) => void;
+  instruksiObat: InstruksiObatItem[];
+  setInstruksiObat: (val: InstruksiObatItem[]) => void;
+  instruksiLain: InstruksiLainItem[];
+  setInstruksiLain: (val: InstruksiLainItem[]) => void;
+  nutrisiCairan: NutrisiCaranItem[];
+  setNutrisiCairan: (val: NutrisiCaranItem[]) => void;
+  polaVentilasi: string;
+  setPolaVentilasi: (val: string) => void;
+  verifikasiDPJP: string;
+  setVerifikasiDPJP: (val: string) => void;
+  verifikasiDPJP2: string;
+  setVerifikasiDPJP2: (val: string) => void;
+  onSubmit: () => void;
+  isEditing: boolean;
 }

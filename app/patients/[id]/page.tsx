@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -19,7 +19,6 @@ export default function PatientDetailPage() {
   const { patient, loading, error } = usePatientDetail(patientId);
   const { goBack } = createPatientDetailHandlers(router);
 
-  /** LOADING STATE */
   if (loading) {
     return (
       <ContainerContent className="text-center py-12">
@@ -29,7 +28,6 @@ export default function PatientDetailPage() {
     );
   }
 
-  /** ERROR STATE */
   if (error || !patient) {
     return (
       <ContainerContent className="text-center border border-red-200 bg-red-50 py-8">
@@ -46,14 +44,12 @@ export default function PatientDetailPage() {
     );
   }
 
-  /** NORMAL PAGE */
   return (
     <div className="space-y-6">
 
-      {/* HEADER PASIEN */}
-      <ContainerContent className="overflow-hidden">
-        <PatientHeaderBasic patient={patient} />
-      </ContainerContent>
+    <div className="space-y-5">
+      <PatientHeaderBasic patient={patient} />
+    </div>
 
       {/* GRID INFO PASIEN */}
       <ContainerContent>
@@ -85,7 +81,7 @@ export default function PatientDetailPage() {
         <PatientDiagnosisCard diagnosis={patient.diagnosis} />
       </ContainerContent>
 
-      {/* INFO FOOTER */}
+      {/* FOOTER INFO */}
       <ContainerContent>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-blue-800 text-sm">

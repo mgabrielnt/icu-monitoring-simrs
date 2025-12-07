@@ -1,95 +1,148 @@
 "use client";
 
+import { useState } from "react";
+import InstruksiObatHeader from "./components/InstruksiObatHeader";
+import InstruksiObatModal from "./components/InstruksiObatModal";
 import InstruksiObatTable from "./components/InstruksiObatTable";
 import { useInstruksiObat } from "@/hooks/useInstruksiObat";
-import { saveInstruksiObat } from "@/services/instructionService";
-import InstruksiObatHeader from "./components/InstruksiObatHeader";
+import { useInstruksiObatForm } from "@/hooks/useInstruksiObatForm";
 
-
-export default function Page() {
+export default function InstruksiObatPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Data management hook
+  const { data, isLoading, create, update, delete: deleteData } = useInstruksiObat();
+  
+  // Form management hook
   const {
-    hariPerawatan, setHariPerawatan,
-    instruksi, setInstruksi,
-    instruksiLain, setInstruksiLain,
-    nutrisi, setNutrisi,
-    polaVentilasi, setPolaVentilasi,
-    generateTimestampedInstruksi
-  } = useInstruksiObat();
+    hariPerawatan,
+    setHariPerawatan,
+    instruksiObat,
+    setInstruksiObat,
+    instruksiLain,
+    setInstruksiLain,
+    nutrisiCairan,
+    setNutrisiCairan,
+    polaVentilasi,
+    setPolaVentilasi,
+    verifikasiDPJP,
+    setVerifikasiDPJP,
+    verifikasiDPJP2,
+    setVerifikasiDPJP2,
+    editingId,
+    resetForm,
+    loadFormData,
+    getFormData,
+    validateForm
+  } = useInstruksiObatForm();
+
+  const openModal = () => setIsModalOpen(true);
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+    resetForm();
+  };
+
+  const handleEdit = (item: any) => {
+    loadFormData(item);
+    openModal();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Yakin ingin menghapus data ini?")) {
+      try {
+        await deleteData(id);
+        alert("Data berhasil dihapus");
+      } catch (error) {
+        alert("Gagal menghapus data");
+      }
+    }
+  };
 
   const handleSubmit = async () => {
-    const payload = {
-      hariPerawatan,
-      instruksi: generateTimestampedInstruksi(), // 🔥 auto jam disini
-      instruksiLain,
-      nutrisi,
-      polaVentilasi,
-    };
+    // Validate form
+    const validation = validateForm();
+    if (!validation.isValid) {
+      alert(validation.message);
+      return;
+    }
 
-    await saveInstruksiObat(payload);
-    alert("Instruksi obat berhasil disimpan");
+    try {
+      const formData = getFormData();
+      
+      if (editingId) {
+        await update(editingId, formData);
+        alert("Data berhasil diupdate");
+      } else {
+        await create(formData);
+        alert("Data berhasil disimpan");
+      }
+      
+      closeModal();
+    } catch (error) {
+      alert("Gagal menyimpan data");
+      console.error(error);
+    }
   };
 
   return (
-    <div className="p-6 space-y-6">
-
+    <div className="min-h-screen bg-gray-50">
+      {/* HEADER */}
       <InstruksiObatHeader />
 
-      <div className="bg-white p-5 rounded-xl shadow">
-        <label className="font-semibold">Hari Perawatan Ke:</label>
-        <input
-          type="number"
-          className="border p-2 ml-2 rounded w-32"
-          value={hariPerawatan}
-          onChange={(e) => setHariPerawatan(Number(e.target.value))}
-        />
-      </div>
-
-      <InstruksiObatTable data={instruksi} setData={setInstruksi} />
-
-      <div className="bg-white p-5 rounded-xl shadow">
-        <h3 className="font-semibold mb-2">Instruksi Lain</h3>
-        <textarea
-          className="border rounded w-full p-2"
-          rows={4}
-          value={instruksiLain}
-          onChange={(e) => setInstruksiLain(e.target.value)}
-        />
-      </div>
-
-      <div className="bg-white p-5 rounded-xl shadow">
-        <h3 className="font-semibold">Nutrisi/Cairan</h3>
-
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          {Object.keys(nutrisi).map((key) => (
-            <div key={key}>
-              <label className="capitalize">{key}</label>
-              <input
-                type="number"
-                className="border p-2 rounded w-full"
-                onChange={(e) =>
-                  setNutrisi({ ...nutrisi, [key]: Number(e.target.value) })
-                }
-              />
-            </div>
-          ))}
+      {/* ACTION BUTTON */}
+      <div className="px-6 py-4 bg-white border-b">
+        <div className="flex justify-end">
+          <button
+            onClick={openModal}
+            disabled={isLoading}
+            className="bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Input Data Instruksi Obat
+          </button>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-xl shadow">
-        <h3 className="font-semibold">Pola Ventilasi</h3>
-        <input
-          className="border p-2 rounded w-full"
-          value={polaVentilasi}
-          onChange={(e) => setPolaVentilasi(e.target.value)}
-        />
+      {/* TABLE SECTION */}
+      <div className="p-6">
+        {isLoading ? (
+          <div className="bg-white rounded-xl shadow-sm border p-16 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+            <p className="mt-4 text-gray-600">Memuat data...</p>
+          </div>
+        ) : (
+          <InstruksiObatTable 
+            data={data} 
+            onEdit={handleEdit} 
+            onDelete={handleDelete} 
+          />
+        )}
       </div>
 
-      <button
-        className="bg-green-700 text-white px-5 py-3 rounded-lg shadow"
-        onClick={handleSubmit}
-      >
-        Simpan Instruksi Obat
-      </button>
+      {/* MODAL */}
+      <InstruksiObatModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        hariPerawatan={hariPerawatan}
+        setHariPerawatan={setHariPerawatan}
+        instruksiObat={instruksiObat}
+        setInstruksiObat={setInstruksiObat}
+        instruksiLain={instruksiLain}
+        setInstruksiLain={setInstruksiLain}
+        nutrisiCairan={nutrisiCairan}
+        setNutrisiCairan={setNutrisiCairan}
+        polaVentilasi={polaVentilasi}
+        setPolaVentilasi={setPolaVentilasi}
+        verifikasiDPJP={verifikasiDPJP}
+        setVerifikasiDPJP={setVerifikasiDPJP}
+        verifikasiDPJP2={verifikasiDPJP2}
+        setVerifikasiDPJP2={setVerifikasiDPJP2}
+        onSubmit={handleSubmit}
+        isEditing={!!editingId}
+      />  
     </div>
   );
 }

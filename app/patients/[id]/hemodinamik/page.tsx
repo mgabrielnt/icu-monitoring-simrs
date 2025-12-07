@@ -84,8 +84,7 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
   return (
     <div className="space-y-5">
     <HemodinamikHeader />
-
-
+    
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">

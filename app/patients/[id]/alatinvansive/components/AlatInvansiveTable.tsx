@@ -55,8 +55,8 @@ export default function AlatInvansiveTable({ entries, onEdit }: Props) {
   const seenSnapshots = new Set<string>();
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 sm:px-6">
+    <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-2.5">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">
             Riwayat Form Invasif / Tube
@@ -76,28 +76,28 @@ export default function AlatInvansiveTable({ entries, onEdit }: Props) {
         <table className="min-w-full divide-y divide-slate-100 text-sm">
           <thead className="bg-slate-50/80">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 No
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Snapshot
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Kelompok
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Jenis Alat
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Ukuran
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Lokasi
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Tanggal
               </th>
-              <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Aksi
               </th>
             </tr>
@@ -107,11 +107,11 @@ export default function AlatInvansiveTable({ entries, onEdit }: Props) {
               <tr>
                 <td
                   colSpan={8}
-                  className="px-4 py-6 text-center text-sm text-slate-500"
+                  className="px-4 py-5 text-center text-sm text-slate-500"
                 >
                   Belum ada data. Klik{" "}
                   <span className="font-semibold text-emerald-700">
-                    “+ Invasif / Tube”
+                    "+ Invasif / Tube"
                   </span>{" "}
                   untuk mengisi form sesuai template.
                 </td>
@@ -127,10 +127,10 @@ export default function AlatInvansiveTable({ entries, onEdit }: Props) {
 
                 return (
                   <tr key={`${row.snapshotId}-${row.label}-${index}`}>
-                    <td className="px-4 py-2 text-xs text-slate-600">
+                    <td className="px-3 py-2 text-xs text-slate-600">
                       {index + 1}
                     </td>
-                    <td className="px-4 py-2 text-xs text-slate-500">
+                    <td className="px-3 py-2 text-xs text-slate-500">
                       {new Date(row.createdAt).toLocaleString("id-ID", {
                         day: "2-digit",
                         month: "2-digit",
@@ -139,24 +139,24 @@ export default function AlatInvansiveTable({ entries, onEdit }: Props) {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-2 text-xs font-medium text-slate-700">
+                    <td className="px-3 py-2 text-xs font-medium text-slate-700">
                       {row.group}
                     </td>
-                    <td className="px-4 py-2 text-sm font-medium text-slate-900">
+                    <td className="px-3 py-2 text-sm font-medium text-slate-900">
                       {row.label}
                     </td>
-                    <td className="px-4 py-2 text-sm text-slate-700">
+                    <td className="px-3 py-2 text-sm text-slate-700">
                       {row.ukuran || "-"}
                     </td>
-                    <td className="px-4 py-2 text-sm text-slate-700">
+                    <td className="px-3 py-2 text-sm text-slate-700">
                       {row.lokasi || "-"}
                     </td>
-                    <td className="px-4 py-2 text-sm text-slate-700">
+                    <td className="px-3 py-2 text-sm text-slate-700">
                       {row.tanggal
                         ? new Date(row.tanggal).toLocaleDateString("id-ID")
                         : "-"}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-3 py-2 text-right">
                       {isFirstRowOfSnapshot && (
                         <button
                           type="button"

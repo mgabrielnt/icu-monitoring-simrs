@@ -9,8 +9,8 @@ interface Props {
 
 export default function ResikoJatuhTable({ entries, onEdit }: Props) {
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-amber-50 bg-amber-50/60 px-4 py-3 sm:px-6">
+    <div className="w-full overflow-hidden rounded-xl border border-amber-100 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-amber-50 bg-amber-50/60 px-4 py-2.5">
         <div>
           <h2 className="text-sm font-semibold text-amber-900">
             Resiko Jatuh • Detail Skor PR
@@ -70,7 +70,7 @@ export default function ResikoJatuhTable({ entries, onEdit }: Props) {
                   className="px-4 py-5 text-center text-sm text-amber-900/70"
                 >
                   Belum ada data. Gunakan tombol{" "}
-                  <span className="font-semibold">“+ Resiko Jatuh (PR)”</span>{" "}
+                  <span className="font-semibold">"+ Resiko Jatuh (PR)"</span>{" "}
                   di header untuk mengisi form seperti lembar kertas.
                 </td>
               </tr>

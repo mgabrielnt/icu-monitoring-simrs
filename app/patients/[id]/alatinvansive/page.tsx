@@ -2,16 +2,12 @@
 
 import { useState } from "react";
 import Container from "@/components/Container";
-import ContainerContent from "@/components/ContainerContent";
 
 import { useAlatInvansiveState } from "@/hooks/useAlatInvansiveState";
 import type {
   InvansifTubeFormData,
-  InvansifTubeEntry,
   ResikoJatuhFormData,
-  ResikoJatuhEntry,
   BalanceCairFormData,
-  BalanceCairEntry,
 } from "@/types/alatinvansive";
 
 import AlatInvansiveHeroHeader from "./components/AlatInvansiveHeroHeader";
@@ -46,7 +42,6 @@ export default function AlatInvansivePage({ params }: Props) {
     updateBalance,
   } = useAlatInvansiveState(patientId);
 
-  // ========= STATE =========
   const [openInvansifModal, setOpenInvansifModal] = useState(false);
   const [openResikoModal, setOpenResikoModal] = useState(false);
   const [openBalanceModal, setOpenBalanceModal] = useState(false);
@@ -54,8 +49,6 @@ export default function AlatInvansivePage({ params }: Props) {
   const [editingInvansifId, setEditingInvansifId] = useState<string | null>(null);
   const [editingResikoId, setEditingResikoId] = useState<string | null>(null);
   const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
-
-  // ========= HANDLERS =========
 
   const openNewInvansif = () => {
     setEditingInvansifId(null);
@@ -138,7 +131,6 @@ export default function AlatInvansivePage({ params }: Props) {
     });
   };
 
-  // Close handlers
   const handleCloseInvansifModal = () => {
     if (!submitting) {
       setOpenInvansifModal(false);
@@ -160,47 +152,37 @@ export default function AlatInvansivePage({ params }: Props) {
     }
   };
 
-  // ========= RENDER =========
   return (
-    <Container className="p-6 space-y-6">
+    <>
+      <AlatInvansiveHeroHeader />
 
-      {/* HEADER */}
-      <ContainerContent>
-        <AlatInvansiveHeroHeader />
-      </ContainerContent>
-
-      {/* SNAPSHOT + ACTION BUTTONS */}
-      <ContainerContent>
-        <AlatInvansiveSnapshotPanel
+      <Container>
+        <div className="space-y-5">
+          <AlatInvansiveSnapshotPanel
           snapshot={snapshot}
           onOpenInvansif={openNewInvansif}
           onOpenResikoJatuh={openNewResiko}
           onOpenBalanceCair={openNewBalance}
         />
-      </ContainerContent>
 
-      {/* TABLE SECTION */}
-      <ContainerContent>
-        <div className="space-y-8">
-          <AlatInvansiveTable
-            entries={invansifEntries}
-            onEdit={handleEditInvansif}
-          />
+        <AlatInvansiveTable
+          entries={invansifEntries}
+          onEdit={handleEditInvansif}
+        />
 
-          <ResikoJatuhTable
-            entries={resikoEntries}
-            onEdit={handleEditResiko}
-          />
+        <ResikoJatuhTable
+          entries={resikoEntries}
+          onEdit={handleEditResiko}
+        />
 
-          <BalanceCairTable
-            entries={balanceEntries}
-            onEdit={handleEditBalance}
-          />
-        </div>
-      </ContainerContent>
+        <BalanceCairTable
+          entries={balanceEntries}
+          onEdit={handleEditBalance}
+        />
+      </div>
+    </Container>
 
-      {/* ALL MODALS */}
-      <AlatInvansiveFormModal
+    <AlatInvansiveFormModal
         open={openInvansifModal}
         onClose={handleCloseInvansifModal}
         onSubmit={handleSubmitInvansif}
@@ -220,7 +202,6 @@ export default function AlatInvansivePage({ params }: Props) {
         onSubmit={handleSubmitBalance}
         isSubmitting={submitting}
       />
-
-    </Container>
+    </>
   );
 }

@@ -117,18 +117,6 @@ export default function HeaderPatients({
                 </p>
               )}
 
-              {/* Data Pasien (hanya muncul jika patient ada) */}
-              {patient && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-emerald-100/90">
-                  <Activity className="h-4 w-4 text-emerald-200" />
-                  <span>
-                    No. RM:{" "}
-                    <span className="font-semibold text-emerald-50">
-                      {patient.noRM}
-                    </span>
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Jam & Tanggal */}

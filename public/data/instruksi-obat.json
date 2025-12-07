@@ -1,0 +1,259 @@
+
+{
+  "data": [
+    {
+      "id": "1",
+      "hariPerawatan": 1,
+      "instruksiObat": [
+        {
+          "jam": "08:00",
+          "namaObat": "Paracetamol",
+          "dosisObat": "500mg",
+          "caraPemberian": "IV",
+          "tglMulai": "2024-12-01",
+          "tglStop": "2024-12-03",
+          "ketPED": "P",
+          "namaDokter": "Dr. Ahmad",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "08:15",
+            "10": "",
+            "12": "",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        },
+        {
+          "jam": "12:00",
+          "namaObat": "Ceftriaxone",
+          "dosisObat": "1g",
+          "caraPemberian": "IV Drip",
+          "tglMulai": "2024-12-01",
+          "tglStop": "2024-12-05",
+          "ketPED": "E",
+          "namaDokter": "Dr. Ahmad",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "",
+            "10": "",
+            "12": "12:10",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        }
+      ],
+      "instruksiLain": [
+        {
+          "instruksi": "Cek Lab Darah Rutin",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "✓",
+            "08": "",
+            "10": "",
+            "12": "",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        }
+      ],
+      "nutrisiCairan": [
+        {
+          "jenis": "Volume",
+          "parenteral": "1500ml",
+          "enteral": "500ml",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Kalori",
+          "parenteral": "1200 kcal",
+          "enteral": "400 kcal",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Protein",
+          "parenteral": "60g",
+          "enteral": "20g",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Lipid",
+          "parenteral": "40g",
+          "enteral": "15g",
+          "jam": "24 jam"
+        }
+      ],
+      "polaVentilasi": "SIMV Mode\nTV: 450ml\nRR: 16\nPEEP: 5\nFiO2: 40%",
+      "verifikasiDPJP": "Dr. Ahmad Fauzi, Sp.An",
+      "verifikasiDPJP2": "Dr. Siti Nurhaliza, Sp.PD",
+      "createdAt": "2024-12-01T08:00:00Z",
+      "updatedAt": "2024-12-01T14:30:00Z"
+    },
+    {
+      "id": "2",
+      "hariPerawatan": 2,
+      "instruksiObat": [
+        {
+          "jam": "08:00",
+          "namaObat": "Paracetamol",
+          "dosisObat": "500mg",
+          "caraPemberian": "IV",
+          "tglMulai": "2024-12-01",
+          "tglStop": "2024-12-03",
+          "ketPED": "P",
+          "namaDokter": "Dr. Ahmad",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "08:20",
+            "10": "",
+            "12": "",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        },
+        {
+          "jam": "12:00",
+          "namaObat": "Ceftriaxone",
+          "dosisObat": "1g",
+          "caraPemberian": "IV Drip",
+          "tglMulai": "2024-12-01",
+          "tglStop": "2024-12-05",
+          "ketPED": "E",
+          "namaDokter": "Dr. Ahmad",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "",
+            "10": "",
+            "12": "12:15",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        },
+        {
+          "jam": "20:00",
+          "namaObat": "Omeprazole",
+          "dosisObat": "40mg",
+          "caraPemberian": "IV",
+          "tglMulai": "2024-12-02",
+          "tglStop": "2024-12-07",
+          "ketPED": "D",
+          "namaDokter": "Dr. Budi",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "",
+            "10": "",
+            "12": "",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "20:05",
+            "22": ""
+          }
+        }
+      ],
+      "instruksiLain": [
+        {
+          "instruksi": "Rontgen Thorax",
+          "implementasi": {
+            "00": "",
+            "02": "",
+            "04": "",
+            "06": "",
+            "08": "✓",
+            "10": "",
+            "12": "",
+            "14": "",
+            "16": "",
+            "18": "",
+            "20": "",
+            "22": ""
+          }
+        },
+        {
+          "instruksi": "Monitoring TTV per 2 jam",
+          "implementasi": {
+            "00": "✓",
+            "02": "✓",
+            "04": "✓",
+            "06": "✓",
+            "08": "✓",
+            "10": "✓",
+            "12": "✓",
+            "14": "✓",
+            "16": "✓",
+            "18": "✓",
+            "20": "✓",
+            "22": "✓"
+          }
+        }
+      ],
+      "nutrisiCairan": [
+        {
+          "jenis": "Volume",
+          "parenteral": "1500ml",
+          "enteral": "600ml",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Kalori",
+          "parenteral": "1200 kcal",
+          "enteral": "500 kcal",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Protein",
+          "parenteral": "60g",
+          "enteral": "25g",
+          "jam": "24 jam"
+        },
+        {
+          "jenis": "Lipid",
+          "parenteral": "40g",
+          "enteral": "18g",
+          "jam": "24 jam"
+        }
+      ],
+      "polaVentilasi": "SIMV Mode\nTV: 450ml\nRR: 14\nPEEP: 5\nFiO2: 35%",
+      "verifikasiDPJP": "Dr. Ahmad Fauzi, Sp.An",
+      "verifikasiDPJP2": "Dr. Siti Nurhaliza, Sp.PD",
+      "createdAt": "2024-12-02T08:00:00Z",
+      "updatedAt": "2024-12-02T20:15:00Z"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "perPage": 10
+  }
+}

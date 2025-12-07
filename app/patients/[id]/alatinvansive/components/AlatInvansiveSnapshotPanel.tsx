@@ -18,16 +18,15 @@ export default function AlatInvansiveSnapshotPanel({
   const { invansifCount, latestResiko, latestBalance } = snapshot;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-emerald-50 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-emerald-50 bg-white shadow-sm">
       {/* BARIS ATAS: tombol aksi */}
-      <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             Form Yang Tersedia
           </p>
           <p className="mt-0.5 text-xs text-slate-600">
-            Pilih form yang ingin diisi. Snapshot di bawah akan terupdate setelah
-            form tersimpan.
+            Pilih form yang ingin diisi. Snapshot di bawah akan terupdate setelah form tersimpan.
           </p>
         </div>
 
@@ -59,10 +58,10 @@ export default function AlatInvansiveSnapshotPanel({
       </div>
 
       {/* BARIS BAWAH: snapshot ringkasan */}
-      <div className="px-4 py-4 sm:px-6 sm:py-5">
-        <div className="grid gap-4 md:grid-cols-3">
+      <div className="px-4 py-3">
+        <div className="grid gap-3 md:grid-cols-3">
           {/* 1) Snapshot Invasif / Tube */}
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-3">
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 px-3 py-2.5">
             <p className="text-[11px] font-medium text-emerald-800">
               Snapshot Invasif / Tube
             </p>
@@ -72,7 +71,7 @@ export default function AlatInvansiveSnapshotPanel({
           </div>
 
           {/* 2) Resiko Jatuh */}
-          <div className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-3">
+          <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2.5">
             <p className="text-[11px] font-medium text-amber-800">
               Resiko Jatuh • Total Skor PR (terakhir)
             </p>
@@ -82,7 +81,7 @@ export default function AlatInvansiveSnapshotPanel({
           </div>
 
           {/* 3) Balance Cair */}
-          <div className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-3">
+          <div className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2.5">
             <p className="text-[11px] font-medium text-sky-800">
               Balance Cair 24 Jam (BC 24 Jam / Kumulatif)
             </p>
