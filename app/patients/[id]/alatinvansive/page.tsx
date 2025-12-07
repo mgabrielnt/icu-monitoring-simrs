@@ -12,12 +12,12 @@ import type {
 
 import AlatInvansiveHeroHeader from "./components/AlatInvansiveHeroHeader";
 import AlatInvansiveSnapshotPanel from "./components/AlatInvansiveSnapshotPanel";
-import AlatInvansiveFormModal from "./components/AlatInvansiveFormModal";
-import ResikoJatuhFormModal from "./components/ResikoJatuhFormModal";
-import BalanceCairFormModal from "./components/BalanceCairFormModal";
-import AlatInvansiveTable from "./components/AlatInvansiveTable";
-import ResikoJatuhTable from "./components/ResikoJatuhTable";
-import BalanceCairTable from "./components/BalanceCairTable";
+import AlatInvansiveFormModal from "./components/modal/AlatInvansiveFormModal";
+import ResikoJatuhFormModal from "./components/modal/ResikoJatuhFormModal";
+import BalanceCairFormModal from "./components/modal/BalanceCairFormModal";
+import AlatInvansiveTable from "./components/table/AlatInvansiveTable";
+import ResikoJatuhTable from "./components/table/ResikoJatuhTable";
+import BalanceCairTable from "./components/table/BalanceCairTable";
 
 interface Props {
   params: {

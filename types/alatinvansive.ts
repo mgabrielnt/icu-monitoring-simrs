@@ -83,6 +83,10 @@ export interface BalanceCairEntry extends BalanceCairFormData {
   id: string;
   createdAt: string;
 }
+export interface InvasiveDeviceEntry {
+  hariKe?: number | null;
+  totalSkorPr?: number | null;
+}
 
 // ========= Snapshot untuk header =========
 export interface AlatInvansiveSnapshot {

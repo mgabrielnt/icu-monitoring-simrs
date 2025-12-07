@@ -1,4 +1,5 @@
 import { InstruksiObatItem } from "@/types/instructionTypes";
+import { generateEmptyObatRow } from "@/utils/instruksiObat";
 
 export function updateObatRow(
   list: InstruksiObatItem[],
@@ -12,20 +13,7 @@ export function updateObatRow(
 }
 
 export function addObatRow(list: InstruksiObatItem[]) {
-  return [
-    ...list,
-    {
-      jam: "",
-      namaObat: "",
-      dosis: "",
-      caraPemberian: "",
-      tglMulai: "",
-      tglStop: "",
-      ketPEd: "",
-      namaDokter: "",
-      implementasi: "",
-    },
-  ];
+  return [...list, generateEmptyObatRow()];
 }
 
 export function deleteObatRow(list: InstruksiObatItem[], index: number) {

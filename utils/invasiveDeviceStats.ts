@@ -1,14 +1,17 @@
-// D:\projek-medis\icu-monitoring-simrs\utils\invasiveDeviceStats.ts
+// utils/invasiveDeviceStats.ts
 
-import type {
-  InvasiveDeviceEntry,
-  InvasiveStats,
-} from "@/types/alatinvansive";
+import { InvasiveDeviceEntry } from "@/types/alatinvansive";
+
+export interface InvasiveStats {
+  total: number;
+  maxHariKe: number | null;
+  avgTotalSkorPr: number | null;
+}
 
 export function calculateInvasiveStats(
-  records: InvasiveDeviceEntry[]
+  records: Partial<InvasiveDeviceEntry>[] = []
 ): InvasiveStats {
-  if (!records.length) {
+  if (!Array.isArray(records) || records.length === 0) {
     return {
       total: 0,
       maxHariKe: null,
@@ -19,12 +22,12 @@ export function calculateInvasiveStats(
   const total = records.length;
 
   const hariKeValues = records
-    .map((r) => r.hariKe)
-    .filter((v): v is number => typeof v === "number");
+    .map((r) => r?.hariKe)
+    .filter((v): v is number => typeof v === "number" && !isNaN(v));
 
   const skorValues = records
-    .map((r) => r.totalSkorPr)
-    .filter((v): v is number => typeof v === "number");
+    .map((r) => r?.totalSkorPr)
+    .filter((v): v is number => typeof v === "number" && !isNaN(v));
 
   const maxHariKe = hariKeValues.length
     ? Math.max(...hariKeValues)
