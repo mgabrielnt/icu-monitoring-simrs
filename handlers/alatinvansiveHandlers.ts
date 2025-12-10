@@ -8,17 +8,8 @@ import type {
   BalanceCairFormData,
   BalanceCairEntry,
 } from "@/types/alatinvansive";
-import {
-  fetchInvansifTube,
-  createInvansifTube,
-  updateInvansifTube,
-  fetchResikoJatuh,
-  createResikoJatuh,
-  updateResikoJatuh,
-  fetchBalanceCair,
-  createBalanceCair,
-  updateBalanceCair,
-} from "@/services/alatinvansiveService";
+
+import AlatInvansiveService from "@/services/alatinvansiveService";
 
 // ====== helper validasi ======
 
@@ -61,19 +52,19 @@ export function hasAnyResikoScore(form: ResikoJatuhFormData): boolean {
 export async function loadInvansifHandler(
   patientId: string
 ): Promise<InvansifTubeEntry[]> {
-  return fetchInvansifTube(patientId);
+  return AlatInvansiveService.fetchInvansifTube(patientId);
 }
 
 export async function loadResikoHandler(
   patientId: string
 ): Promise<ResikoJatuhEntry[]> {
-  return fetchResikoJatuh(patientId);
+  return AlatInvansiveService.fetchResikoJatuh(patientId);
 }
 
 export async function loadBalanceHandler(
   patientId: string
 ): Promise<BalanceCairEntry[]> {
-  return fetchBalanceCair(patientId);
+  return AlatInvansiveService.fetchBalanceCair(patientId);
 }
 
 // ====== CREATE ======
@@ -85,7 +76,7 @@ export async function submitInvansifHandler(
   if (!hasAnyInvansifValue(form)) {
     throw new Error("Isi minimal satu baris invasif / tube.");
   }
-  return createInvansifTube(patientId, form);
+  return AlatInvansiveService.createInvansifTube(patientId, form);
 }
 
 export async function submitResikoHandler(
@@ -98,7 +89,7 @@ export async function submitResikoHandler(
   if (form.totalSkorPr == null) {
     throw new Error("Total skor PR belum terisi.");
   }
-  return createResikoJatuh(patientId, form);
+  return AlatInvansiveService.createResikoJatuh(patientId, form);
 }
 
 export async function submitBalanceHandler(
@@ -108,7 +99,7 @@ export async function submitBalanceHandler(
   if (!hasAnyBalanceValue(form)) {
     throw new Error("Isi minimal satu kolom balance cairan.");
   }
-  return createBalanceCair(patientId, form);
+  return AlatInvansiveService.createBalanceCair(patientId, form);
 }
 
 // ====== UPDATE ======
@@ -121,7 +112,7 @@ export async function updateInvansifHandler(
   if (!hasAnyInvansifValue(form)) {
     throw new Error("Isi minimal satu baris invasif / tube.");
   }
-  return updateInvansifTube(patientId, entryId, form);
+  return AlatInvansiveService.updateInvansifTube(patientId, entryId, form);
 }
 
 export async function updateResikoHandler(
@@ -135,7 +126,7 @@ export async function updateResikoHandler(
   if (form.totalSkorPr == null) {
     throw new Error("Total skor PR belum terisi.");
   }
-  return updateResikoJatuh(patientId, entryId, form);
+  return AlatInvansiveService.updateResikoJatuh(patientId, entryId, form);
 }
 
 export async function updateBalanceHandler(
@@ -146,5 +137,5 @@ export async function updateBalanceHandler(
   if (!hasAnyBalanceValue(form)) {
     throw new Error("Isi minimal satu kolom balance cairan.");
   }
-  return updateBalanceCair(patientId, entryId, form);
+  return AlatInvansiveService.updateBalanceCair(patientId, entryId, form);
 }

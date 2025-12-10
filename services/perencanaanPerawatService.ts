@@ -5,6 +5,7 @@ import {
   CreatePerencanaanPerawatImplementationPayload,
   PerencanaanPerawatImplementation,
 } from "@/types/perencanaanPerawat";
+
 import {
   PerencanaanPerawatDTO,
   buildCreatePerencanaanDTO,
@@ -12,69 +13,51 @@ import {
   mapPerencanaanDTOToModel,
 } from "@/handlers/perencanaanPerawatHandlers";
 
-// BASE URL BACKEND
-// Contoh di .env.local:
-// NEXT_PUBLIC_API_BASE_URL="http://localhost:8080/api"
-const RAW_API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
-// hapus trailing slash biar aman
-const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, "");
+export class PerencanaanPerawatService {
+  static async fetchPerencanaanPerawat(
+    patientId: string
+  ): Promise<PerencanaanPerawatImplementation[]> {
+    const url = `${API_BASE_URL}/patients/${patientId}/perencanaan-perawat`;
+    const response = await fetch(url, { method: "GET" });
 
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let message = "Terjadi kesalahan pada server.";
-    try {
-      const text = await res.text();
-      if (text) message = text;
-    } catch {
-      // ignore parse error
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Gagal mengambil data perencanaan perawat");
     }
-    throw new Error(message);
+
+    const json = (await response.json()) as {
+      data: PerencanaanPerawatDTO[];
+    };
+
+    return mapPerencanaanArrayDTOToModel(json.data);
   }
-  return res.json() as Promise<T>;
-}
 
-/**
- * GET /patients/:id/perencanaan-perawat
- */
-export async function fetchPerencanaanPerawat(
-  patientId: string
-): Promise<PerencanaanPerawatImplementation[]> {
-  const url = `${API_BASE_URL}/patients/${patientId}/perencanaan-perawat`;
+  static async createPerencanaanPerawat(
+    patientId: string,
+    payload: CreatePerencanaanPerawatImplementationPayload
+  ): Promise<PerencanaanPerawatImplementation> {
+    const url = `${API_BASE_URL}/patients/${patientId}/perencanaan-perawat`;
+    const dto = buildCreatePerencanaanDTO(payload);
 
-  try {
-    const res = await fetch(url, {
-      method: "GET",
+    const response = await fetch(url, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      // kalau backend mau cache, bisa disesuaikan
+      body: JSON.stringify(dto),
     });
 
-    const json = await handleResponse<{ data: PerencanaanPerawatDTO[] }>(res);
-    return mapPerencanaanArrayDTOToModel(json.data);
-  } catch (error) {
-    console.error("Gagal fetch perencanaan perawat:", error);
-    // hook akan menangkap error ini dan menampilkan pesan di UI
-    throw error;
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Gagal membuat perencanaan perawat");
+    }
+
+    const json = (await response.json()) as {
+      data: PerencanaanPerawatDTO;
+    };
+
+    return mapPerencanaanDTOToModel(json.data);
   }
 }
 
-/**
- * POST /patients/:id/perencanaan-perawat
- */
-export async function createPerencanaanPerawat(
-  patientId: string,
-  payload: CreatePerencanaanPerawatImplementationPayload
-): Promise<PerencanaanPerawatImplementation> {
-  const url = `${API_BASE_URL}/patients/${patientId}/perencanaan-perawat`;
-  const dto = buildCreatePerencanaanDTO(payload);
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
-  });
-
-  const json = await handleResponse<{ data: PerencanaanPerawatDTO }>(res);
-  return mapPerencanaanDTOToModel(json.data);
-}
+export default PerencanaanPerawatService;

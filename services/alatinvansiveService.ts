@@ -1,6 +1,6 @@
-// D:\projek-medis\icu-monitoring-simrs\services\alatinvansiveService.ts
+// file: services/alatinvansiveService.ts
+"use client";
 
-import { apiClient } from "@/lib/core";
 import type {
   InvansifTubeEntry,
   InvansifTubeFormData,
@@ -10,109 +10,140 @@ import type {
   BalanceCairFormData,
 } from "@/types/alatinvansive";
 
-const BASE = "/api/patients";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-const invansifPath = (patientId: string) =>
-  `${BASE}/${encodeURIComponent(patientId)}/alatinvansive/invansif-tube`;
+export class AlatInvansiveService {
+  static async fetchInvansifTube(patientId: string): Promise<InvansifTubeEntry[]> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/invansif-tube`);
+    if (!res.ok) throw new Error("Failed to fetch invansif tube");
+    return res.json();
+  }
 
-const resikoPath = (patientId: string) =>
-  `${BASE}/${encodeURIComponent(patientId)}/alatinvansive/resiko-jatuh`;
-
-const balancePath = (patientId: string) =>
-  `${BASE}/${encodeURIComponent(patientId)}/alatinvansive/balance-cair`;
-
-// ============ INVANSIF / TUBE ============
-
-export async function fetchInvansifTube(
-  patientId: string
-): Promise<InvansifTubeEntry[]> {
-  return apiClient<InvansifTubeEntry[]>(invansifPath(patientId));
-}
-
-export async function createInvansifTube(
-  patientId: string,
-  payload: InvansifTubeFormData
-): Promise<InvansifTubeEntry> {
-  return apiClient<InvansifTubeEntry>(invansifPath(patientId), {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function updateInvansifTube(
-  patientId: string,
-  entryId: string,
-  payload: InvansifTubeFormData
-): Promise<InvansifTubeEntry> {
-  return apiClient<InvansifTubeEntry>(
-    `${invansifPath(patientId)}/${encodeURIComponent(entryId)}`,
-    {
-      method: "PUT",
+  static async createInvansifTube(
+    patientId: string,
+    payload: InvansifTubeFormData
+  ): Promise<InvansifTubeEntry> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/invansif-tube`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }
-  );
-}
+    });
+    if (!res.ok) throw new Error("Failed to create invansif tube");
+    return res.json();
+  }
 
-// ============ RESIKO JATUH ============
+  static async updateInvansifTube(
+    patientId: string,
+    entryId: string,
+    payload: InvansifTubeFormData
+  ): Promise<InvansifTubeEntry> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/invansif-tube/${entryId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to update invansif tube");
+    return res.json();
+  }
 
-export async function fetchResikoJatuh(
-  patientId: string
-): Promise<ResikoJatuhEntry[]> {
-  return apiClient<ResikoJatuhEntry[]>(resikoPath(patientId));
-}
+  static async deleteInvansifTube(patientId: string, entryId: string): Promise<void> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/invansif-tube/${entryId}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error("Failed to delete invansif tube");
+  }
 
-export async function createResikoJatuh(
-  patientId: string,
-  payload: ResikoJatuhFormData
-): Promise<ResikoJatuhEntry> {
-  return apiClient<ResikoJatuhEntry>(resikoPath(patientId), {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
+  static async fetchResikoJatuh(patientId: string): Promise<ResikoJatuhEntry[]> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/resiko-jatuh`);
+    if (!res.ok) throw new Error("Failed to fetch resiko jatuh");
+    return res.json();
+  }
 
-export async function updateResikoJatuh(
-  patientId: string,
-  entryId: string,
-  payload: ResikoJatuhFormData
-): Promise<ResikoJatuhEntry> {
-  return apiClient<ResikoJatuhEntry>(
-    `${resikoPath(patientId)}/${encodeURIComponent(entryId)}`,
-    {
-      method: "PUT",
+  static async createResikoJatuh(
+    patientId: string,
+    payload: ResikoJatuhFormData
+  ): Promise<ResikoJatuhEntry> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/resiko-jatuh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }
-  );
-}
+    });
+    if (!res.ok) throw new Error("Failed to create resiko jatuh");
+    return res.json();
+  }
 
-// ============ BALANCE CAIR ============
+  static async updateResikoJatuh(
+    patientId: string,
+    entryId: string,
+    payload: ResikoJatuhFormData
+  ): Promise<ResikoJatuhEntry> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/resiko-jatuh/${entryId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to update resiko jatuh");
+    return res.json();
+  }
 
-export async function fetchBalanceCair(
-  patientId: string
-): Promise<BalanceCairEntry[]> {
-  return apiClient<BalanceCairEntry[]>(balancePath(patientId));
-}
+  static async deleteResikoJatuh(patientId: string, entryId: string): Promise<void> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/resiko-jatuh/${entryId}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error("Failed to delete resiko jatuh");
+  }
 
-export async function createBalanceCair(
-  patientId: string,
-  payload: BalanceCairFormData
-): Promise<BalanceCairEntry> {
-  return apiClient<BalanceCairEntry>(balancePath(patientId), {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
+  static async fetchBalanceCair(patientId: string): Promise<BalanceCairEntry[]> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/balance-cair`);
+    if (!res.ok) throw new Error("Failed to fetch balance cair");
+    return res.json();
+  }
 
-export async function updateBalanceCair(
-  patientId: string,
-  entryId: string,
-  payload: BalanceCairFormData
-): Promise<BalanceCairEntry> {
-  return apiClient<BalanceCairEntry>(
-    `${balancePath(patientId)}/${encodeURIComponent(entryId)}`,
-    {
-      method: "PUT",
+  static async createBalanceCair(
+    patientId: string,
+    payload: BalanceCairFormData
+  ): Promise<BalanceCairEntry> {
+    const res = await fetch(`${API_BASE_URL}/api/patients/${patientId}/alatinvansive/balance-cair`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }
-  );
+    });
+    if (!res.ok) throw new Error("Failed to create balance cair");
+    return res.json();
+  }
+
+  static async updateBalanceCair(
+    patientId: string,
+    entryId: string,
+    payload: BalanceCairFormData
+  ): Promise<BalanceCairEntry> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/balance-cair/${entryId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to update balance cair");
+    return res.json();
+  }
+
+  static async deleteBalanceCair(patientId: string, entryId: string): Promise<void> {
+    const res = await fetch(
+      `${API_BASE_URL}/api/patients/${patientId}/alatinvansive/balance-cair/${entryId}`,
+      { method: "DELETE" }
+    );
+    if (!res.ok) throw new Error("Failed to delete balance cair");
+  }
 }
+
+export default AlatInvansiveService;
