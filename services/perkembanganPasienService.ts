@@ -40,4 +40,16 @@ export class PerkembanganPasienService {
   }
 }
 
+export function fetchPerkembanganPasienNotes(
+  patientId: string
+): Promise<PerkembanganPasienNote[]> {
+  return PerkembanganPasienService.fetchNotes(patientId);
+}
+
+export function createPerkembanganPasienNote(
+  payload: CreatePerkembanganPasienPayload
+): Promise<PerkembanganPasienNote> {
+  return PerkembanganPasienService.createNote(payload);
+}
+
 export default PerkembanganPasienService;
