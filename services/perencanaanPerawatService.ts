@@ -21,20 +21,61 @@ function getStorageKey(patientId: string) {
 }
 
 function getActivityLabel(activityId: number) {
-  return (
-    NURSING_ACTIVITIES.find((activity) => activity.id === activityId)?.label ||
-    `Kegiatan ${activityId}`
-  );
+  return NURSING_ACTIVITIES.find((item) => item.id === activityId)?.label || `Kegiatan ${activityId}`;
+}
+
+function makeSeed(patientId: string): PerencanaanPerawatImplementation[] {
+  return [
+    {
+      id: `${patientId}-seed-3`,
+      patientId,
+      activityId: 2,
+      activityLabel: getActivityLabel(2),
+      nurseName: "Staff Siang",
+      bedNumber: `Bed ${patientId}`,
+      shift: "siang",
+      time: "14:30",
+      notes: "Data dummy shift siang.",
+      dpjpVerification: "Verifier A",
+      createdAt: "2026-07-05T07:30:00.000Z",
+    },
+    {
+      id: `${patientId}-seed-2`,
+      patientId,
+      activityId: 20,
+      activityLabel: getActivityLabel(20),
+      nurseName: "Staff Pagi",
+      bedNumber: `Bed ${patientId}`,
+      shift: "pagi",
+      time: "10:00",
+      notes: "Data dummy shift pagi.",
+      dpjpVerification: "Verifier A",
+      createdAt: "2026-07-05T03:00:00.000Z",
+    },
+    {
+      id: `${patientId}-seed-1`,
+      patientId,
+      activityId: 12,
+      activityLabel: getActivityLabel(12),
+      nurseName: "Staff Pagi",
+      bedNumber: `Bed ${patientId}`,
+      shift: "pagi",
+      time: "08:00",
+      notes: "Data contoh awal.",
+      dpjpVerification: "Verifier A",
+      createdAt: "2026-07-05T01:00:00.000Z",
+    },
+  ];
 }
 
 function readLocal(patientId: string): PerencanaanPerawatImplementation[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined") return makeSeed(patientId);
 
   try {
     const raw = window.localStorage.getItem(getStorageKey(patientId));
-    return raw ? (JSON.parse(raw) as PerencanaanPerawatImplementation[]) : [];
+    return raw ? (JSON.parse(raw) as PerencanaanPerawatImplementation[]) : makeSeed(patientId);
   } catch {
-    return [];
+    return makeSeed(patientId);
   }
 }
 
@@ -55,10 +96,7 @@ export class PerencanaanPerawatService {
 
       if (!response.ok) return readLocal(patientId);
 
-      const json = (await response.json()) as {
-        data?: PerencanaanPerawatDTO[];
-      };
-
+      const json = (await response.json()) as { data?: PerencanaanPerawatDTO[] };
       return mapPerencanaanArrayDTOToModel(json.data ?? []);
     } catch {
       return readLocal(patientId);
@@ -81,14 +119,10 @@ export class PerencanaanPerawatService {
         });
 
         if (response.ok) {
-          const json = (await response.json()) as {
-            data: PerencanaanPerawatDTO;
-          };
+          const json = (await response.json()) as { data: PerencanaanPerawatDTO };
           return mapPerencanaanDTOToModel(json.data);
         }
-      } catch {
-        // Gunakan penyimpanan lokal jika API belum tersedia.
-      }
+      } catch {}
     }
 
     const created: PerencanaanPerawatImplementation = {
