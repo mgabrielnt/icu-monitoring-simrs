@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import Container from "@/components/Container";
-
 import { useAlatInvansiveState } from "@/hooks/useAlatInvansiveState";
 import type {
   InvansifTubeFormData,
   ResikoJatuhFormData,
   BalanceCairFormData,
 } from "@/types/alatinvansive";
-
 import AlatInvansiveHeroHeader from "./components/AlatInvansiveHeroHeader";
 import AlatInvansiveSnapshotPanel from "./components/AlatInvansiveSnapshotPanel";
 import AlatInvansiveFormModal from "./components/modal/AlatInvansiveFormModal";
@@ -19,14 +18,9 @@ import AlatInvansiveTable from "./components/table/AlatInvansiveTable";
 import ResikoJatuhTable from "./components/table/ResikoJatuhTable";
 import BalanceCairTable from "./components/table/BalanceCairTable";
 
-interface Props {
-  params: {
-    id: string;
-  };
-}
-
-export default function AlatInvansivePage({ params }: Props) {
-  const patientId = params.id;
+export default function AlatInvansivePage() {
+  const params = useParams<{ id: string }>();
+  const patientId = params?.id ?? "";
 
   const {
     invansifEntries,
@@ -45,7 +39,6 @@ export default function AlatInvansivePage({ params }: Props) {
   const [openInvansifModal, setOpenInvansifModal] = useState(false);
   const [openResikoModal, setOpenResikoModal] = useState(false);
   const [openBalanceModal, setOpenBalanceModal] = useState(false);
-
   const [editingInvansifId, setEditingInvansifId] = useState<string | null>(null);
   const [editingResikoId, setEditingResikoId] = useState<string | null>(null);
   const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
@@ -66,68 +59,71 @@ export default function AlatInvansivePage({ params }: Props) {
   };
 
   const handleEditInvansif = (entryId: string) => {
-    if (!invansifEntries.find((e) => e.id === entryId)) return;
+    if (!invansifEntries.find((entry) => entry.id === entryId)) return;
     setEditingInvansifId(entryId);
     setOpenInvansifModal(true);
   };
 
   const handleEditResiko = (entryId: string) => {
-    if (!resikoEntries.find((e) => e.id === entryId)) return;
+    if (!resikoEntries.find((entry) => entry.id === entryId)) return;
     setEditingResikoId(entryId);
     setOpenResikoModal(true);
   };
 
   const handleEditBalance = (entryId: string) => {
-    if (!balanceEntries.find((e) => e.id === entryId)) return;
+    if (!balanceEntries.find((entry) => entry.id === entryId)) return;
     setEditingBalanceId(entryId);
     setOpenBalanceModal(true);
   };
 
   const handleSubmitInvansif = (payload: InvansifTubeFormData) => {
     if (editingInvansifId) {
-      return updateInvansif(editingInvansifId, payload).then((msg) => {
-        if (!msg) {
+      return updateInvansif(editingInvansifId, payload).then((message) => {
+        if (!message) {
           setOpenInvansifModal(false);
           setEditingInvansifId(null);
         }
-        return msg;
+        return message;
       });
     }
-    return submitInvansif(payload).then((msg) => {
-      if (!msg) setOpenInvansifModal(false);
-      return msg;
+
+    return submitInvansif(payload).then((message) => {
+      if (!message) setOpenInvansifModal(false);
+      return message;
     });
   };
 
   const handleSubmitResiko = (payload: ResikoJatuhFormData) => {
     if (editingResikoId) {
-      return updateResiko(editingResikoId, payload).then((msg) => {
-        if (!msg) {
+      return updateResiko(editingResikoId, payload).then((message) => {
+        if (!message) {
           setOpenResikoModal(false);
           setEditingResikoId(null);
         }
-        return msg;
+        return message;
       });
     }
-    return submitResiko(payload).then((msg) => {
-      if (!msg) setOpenResikoModal(false);
-      return msg;
+
+    return submitResiko(payload).then((message) => {
+      if (!message) setOpenResikoModal(false);
+      return message;
     });
   };
 
   const handleSubmitBalance = (payload: BalanceCairFormData) => {
     if (editingBalanceId) {
-      return updateBalance(editingBalanceId, payload).then((msg) => {
-        if (!msg) {
+      return updateBalance(editingBalanceId, payload).then((message) => {
+        if (!message) {
           setOpenBalanceModal(false);
           setEditingBalanceId(null);
         }
-        return msg;
+        return message;
       });
     }
-    return submitBalance(payload).then((msg) => {
-      if (!msg) setOpenBalanceModal(false);
-      return msg;
+
+    return submitBalance(payload).then((message) => {
+      if (!message) setOpenBalanceModal(false);
+      return message;
     });
   };
 
@@ -159,30 +155,19 @@ export default function AlatInvansivePage({ params }: Props) {
       <Container>
         <div className="space-y-5">
           <AlatInvansiveSnapshotPanel
-          snapshot={snapshot}
-          onOpenInvansif={openNewInvansif}
-          onOpenResikoJatuh={openNewResiko}
-          onOpenBalanceCair={openNewBalance}
-        />
+            snapshot={snapshot}
+            onOpenInvansif={openNewInvansif}
+            onOpenResikoJatuh={openNewResiko}
+            onOpenBalanceCair={openNewBalance}
+          />
 
-        <AlatInvansiveTable
-          entries={invansifEntries}
-          onEdit={handleEditInvansif}
-        />
+          <AlatInvansiveTable entries={invansifEntries} onEdit={handleEditInvansif} />
+          <ResikoJatuhTable entries={resikoEntries} onEdit={handleEditResiko} />
+          <BalanceCairTable entries={balanceEntries} onEdit={handleEditBalance} />
+        </div>
+      </Container>
 
-        <ResikoJatuhTable
-          entries={resikoEntries}
-          onEdit={handleEditResiko}
-        />
-
-        <BalanceCairTable
-          entries={balanceEntries}
-          onEdit={handleEditBalance}
-        />
-      </div>
-    </Container>
-
-    <AlatInvansiveFormModal
+      <AlatInvansiveFormModal
         open={openInvansifModal}
         onClose={handleCloseInvansifModal}
         onSubmit={handleSubmitInvansif}
