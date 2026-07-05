@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import DetailPasienHeader from "./components/DetailPasienHeader";
 import DetailPasienTable from "./components/DetailPasienTable";
-import DetailPasienModal from   "./components/DetailPasienModal";
-import type { DetailEntry, DetailPasienProps } from "@/types/detailPatient";
-import { Activity, Clock, Plus } from "lucide-react";
+import DetailPasienModal from "./components/DetailPasienModal";
+import type { DetailEntry } from "@/types/detailPatient";
+import { Plus } from "lucide-react";
 
 const createId = () => Math.random().toString(36).slice(2);
 
@@ -16,7 +17,12 @@ const formatTime = (date: Date) =>
     hour12: false,
   });
 
-const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawatanKe, onSaved }) => {
+export default function DetailPasienPage() {
+  const params = useParams<{ id: string }>();
+  const noRm = params?.id ?? "";
+  const tanggal = new Date().toISOString().slice(0, 10);
+  const hariPerawatanKe = null;
+
   const [systemTime, setSystemTime] = useState<string>(formatTime(new Date()));
   const [entries, setEntries] = useState<DetailEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,12 +92,12 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
         id: createId(),
         jam,
         ...form,
-      } as unknown as DetailEntry;
+      } as DetailEntry;
 
       setEntries((prev) => [...prev, entry]);
 
       const payload = {
-        meta: { noRm: noRm || null, tanggal: tanggal || null, hariPerawatanKe: hariPerawatanKe ?? null },
+        meta: { noRm: noRm || null, tanggal, hariPerawatanKe },
         detail: entry,
       };
 
@@ -146,8 +152,6 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
         setIsModalOpen(false);
         setSubmitSuccess(false);
       }, 1500);
-
-      if (onSaved) onSaved();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan");
     } finally {
@@ -155,7 +159,6 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
     }
   };
 
-  // onSave wrapper (keeps original pre-submit auto-calc logic)
   const onSave = async () => {
     const extract = (s: string) => {
       const m = s && s.toString().match(/(\d+(\.\d+)?)/);
@@ -172,7 +175,7 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
       if (totalKeluar > 0) setForm((prev) => ({ ...prev, keluarTotal: `${totalKeluar} cc` }));
     }
 
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((resolve) => setTimeout(resolve, 20));
     await handleSubmit();
   };
 
@@ -181,14 +184,27 @@ const DetailPasien: React.FC<DetailPasienProps> = ({ noRm, tanggal, hariPerawata
       <DetailPasienHeader />
 
       <section className="flex justify-end">
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-emerald-50 shadow-sm hover:bg-emerald-800 transition"><Plus className="h-4 w-4" /> Input Data Detail Pasien</button>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-emerald-50 shadow-sm transition hover:bg-emerald-800"
+        >
+          <Plus className="h-4 w-4" /> Input Data Detail Pasien
+        </button>
       </section>
 
       <DetailPasienTable entries={entries} />
 
-      <DetailPasienModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} systemTime={systemTime} form={form} handleChange={(f, v) => handleChange(f as any, v)} isSubmitting={isSubmitting} submitError={submitError} submitSuccess={submitSuccess} onSave={onSave} />
+      <DetailPasienModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        systemTime={systemTime}
+        form={form}
+        handleChange={(field, value) => handleChange(field as keyof typeof form, value)}
+        isSubmitting={isSubmitting}
+        submitError={submitError}
+        submitSuccess={submitSuccess}
+        onSave={onSave}
+      />
     </div>
   );
-};
-
-export default DetailPasien;
+}
