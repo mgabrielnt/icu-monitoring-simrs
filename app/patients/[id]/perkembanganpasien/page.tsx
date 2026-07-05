@@ -1,7 +1,7 @@
-// app/patients/[id]/perkembanganpasien/components/PerkembanganPasienClient.tsx
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { usePerkembanganPasien } from "@/hooks/usePerkembanganPasien";
 import { handleSubmitPerkembanganPasien } from "@/handlers/perkembanganPasienHandlers";
 import type {
@@ -13,11 +13,9 @@ import PerkembanganPasienHeader from "./components/PerkembanganPasienHeader";
 import PerkembanganPasienForm from "./components/PerkembanganPasienForm";
 import PerkembanganPasienTable from "./components/PerkembanganPasienTable";
 
-interface Props {
-  patientId: string;
-}
-
-export default function PerkembanganPasienClient({ patientId }: Props) {
+export default function PerkembanganPasienPage() {
+  const params = useParams<{ id: string }>();
+  const patientId = params?.id ?? "";
   const { notes, loading, error, addNote } = usePerkembanganPasien({ patientId });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -33,7 +31,7 @@ export default function PerkembanganPasienClient({ patientId }: Props) {
 
   const handleChange = (
     field: keyof CreatePerkembanganPasienPayload,
-    value: string | SOAPCategory,
+    value: string | SOAPCategory
   ) => {
     setFormValues((prev) => ({
       ...prev,
@@ -57,9 +55,9 @@ export default function PerkembanganPasienClient({ patientId }: Props) {
       const created = await handleSubmitPerkembanganPasien(payload);
       addNote(created);
 
-      // reset field teks, biar cepat input berikutnya
       setFormValues((prev) => ({
         ...prev,
+        patientId,
         datetime: toLocalInputValue(),
         assessment: "",
         instruction: "",
