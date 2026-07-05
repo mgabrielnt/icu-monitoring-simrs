@@ -1,7 +1,7 @@
 // file: services/perencanaanPerawatService.ts
 "use client";
 
-import {
+import type {
   CreatePerencanaanPerawatImplementationPayload,
   PerencanaanPerawatImplementation,
 } from "@/types/perencanaanPerawat";
@@ -58,6 +58,19 @@ export class PerencanaanPerawatService {
 
     return mapPerencanaanDTOToModel(json.data);
   }
+}
+
+export function fetchPerencanaanPerawat(
+  patientId: string
+): Promise<PerencanaanPerawatImplementation[]> {
+  return PerencanaanPerawatService.fetchPerencanaanPerawat(patientId);
+}
+
+export function createPerencanaanPerawat(
+  patientId: string,
+  payload: CreatePerencanaanPerawatImplementationPayload
+): Promise<PerencanaanPerawatImplementation> {
+  return PerencanaanPerawatService.createPerencanaanPerawat(patientId, payload);
 }
 
 export default PerencanaanPerawatService;
