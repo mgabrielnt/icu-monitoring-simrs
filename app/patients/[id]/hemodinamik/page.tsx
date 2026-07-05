@@ -1,25 +1,23 @@
-// page.tsx
-
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import HemodinamikHeader from "./components/HemodinamikHeader";
 import { HemodinamikChart } from "./components/HemodinamikChart";
 import { HemodinamikTable } from "./components/HemodinamikTable";
 import { HemodinamikModal } from "./components/HemodinamikModal";
 import { useHemodinamik } from "@/hooks/useHemodinamik";
 import { formatTime } from "@/lib/hemodinamik.utils";
-import type { HemodinamikProps, HemodinamikChartData } from "@/types/hemodinamik.types";
+import type { HemodinamikChartData } from "@/types/hemodinamik.types";
 
-const Hemodinamik: React.FC<HemodinamikProps> = ({
-  noRm,
-  tanggal,
-  hariPerawatanKe,
-  onSaved,
-}) => {
+export default function HemodinamikPage() {
+  const params = useParams<{ id: string }>();
+  const noRm = params?.id ?? "";
+  const tanggal = new Date().toISOString().slice(0, 10);
+  const hariPerawatanKe = null;
+
   const [systemTime, setSystemTime] = useState<string>(formatTime(new Date()));
   const [isModalOpen, setIsModalOpen] = useState(false);
-
 
   const {
     entries,
@@ -34,11 +32,10 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
     loadEntries,
   } = useHemodinamik({
     noRm: noRm || null,
-    tanggal: tanggal || null,
-    hariPerawatanKe: hariPerawatanKe ?? null,
+    tanggal,
+    hariPerawatanKe,
   });
 
-  // Update system time setiap 30 detik
   useEffect(() => {
     const timer = setInterval(() => {
       setSystemTime(formatTime(new Date()));
@@ -46,59 +43,49 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Load data dari JSON saat komponen mount
   useEffect(() => {
     loadEntries(noRm);
   }, [noRm, loadEntries]);
 
-  // Handle modal close setelah submit success
   useEffect(() => {
     if (submitSuccess) {
       const timeout = setTimeout(() => {
         setIsModalOpen(false);
         setSubmitSuccess(false);
-        if (onSaved) onSaved();
       }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [submitSuccess, onSaved, setSubmitSuccess]);
+  }, [submitSuccess, setSubmitSuccess]);
 
-  // Prepare data untuk chart
-  const chartData: HemodinamikChartData[] = entries.map((e) => ({
-    jam: e.jam,
-    Sistol: e.sistol,
-    Diastol: e.diastol,
-    HR: e.hr,
-    MAP: e.map,
-    Temp: e.temp,
+  const chartData: HemodinamikChartData[] = entries.map((entry) => ({
+    jam: entry.jam,
+    Sistol: entry.sistol,
+    Diastol: entry.diastol,
+    HR: entry.hr,
+    MAP: entry.map,
+    Temp: entry.temp,
   }));
 
   const handleModalSubmit = async () => {
     const success = await handleSubmit();
-    if (!success) {
-      // Jika gagal, modal tetap terbuka dan error message sudah di-handle di hook
-      return;
-    }
+    if (!success) return;
   };
 
   return (
     <div className="space-y-5">
-    <HemodinamikHeader />
-    
+      <HemodinamikHeader />
+
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600"></div>
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
             <p className="mt-3 text-sm text-slate-600">Memuat data...</p>
           </div>
         </div>
       ) : (
         <>
           <HemodinamikChart data={chartData} />
-          <HemodinamikTable
-            entries={entries}
-            onAddClick={() => setIsModalOpen(true)}
-          />
+          <HemodinamikTable entries={entries} onAddClick={() => setIsModalOpen(true)} />
         </>
       )}
 
@@ -115,6 +102,4 @@ const Hemodinamik: React.FC<HemodinamikProps> = ({
       />
     </div>
   );
-};
-
-export default Hemodinamik;
+}
