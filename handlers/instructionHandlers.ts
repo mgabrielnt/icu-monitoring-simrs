@@ -1,15 +1,21 @@
 import { InstruksiObatItem } from "@/types/instructionTypes";
 import { generateEmptyObatRow } from "@/utils/instruksiObat";
 
+type InstruksiObatStringKey = {
+  [Key in keyof InstruksiObatItem]: InstruksiObatItem[Key] extends string
+    ? Key
+    : never;
+}[keyof InstruksiObatItem];
+
 export function updateObatRow(
   list: InstruksiObatItem[],
   index: number,
-  key: keyof InstruksiObatItem,
+  key: InstruksiObatStringKey,
   value: string
 ) {
-  const updated = [...list];
-  updated[index][key] = value;
-  return updated;
+  return list.map((item, itemIndex) =>
+    itemIndex === index ? { ...item, [key]: value } : item
+  );
 }
 
 export function addObatRow(list: InstruksiObatItem[]) {
